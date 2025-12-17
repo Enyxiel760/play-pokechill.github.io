@@ -927,6 +927,7 @@ move.acrobatics = { //new
 }
 
 move.airShlash = {
+    rename: `airSlash`,
     moveset: [`flying`],
     split: "special",
     rarity: 3,
@@ -1388,7 +1389,7 @@ move.stringShot = {
     type: "bug",
     power: 0,
     info: function() {return `Decreases enemy Speed by 100%`},
-    hitEffect: function(target) { moveBuff(target,'spedown2',"self") },
+    hitEffect: function(target) { moveBuff(target,'spedown2') },
 }
 
 move.bugBuzz = {
@@ -3068,92 +3069,120 @@ ability.noGuard = {
 
 
 
+
+
+
 //hidden
 ability.sereneGrace = {
     info: function() {return `Secondary effect of moves are executed twice`},
+    rarity: 3,
 }
 
 ability.hugePower = {
-    info: function() {return `Attack stat is multiplied by x1.5`},
-}
-
-ability.darkAura = {
-    info: function() {return `Multiplies by x1.1 the damage of Dark-type moves of all team members`},
+    info: function() {return `Attack stat is multiplied by x2`},
+    rarity: 3,
 }
 
 ability.contrary = {
+    info: function() {return `Inverts stat changes. Positive changes become negative, and negative become positive`},
+    rarity: 3,
 }
 
-ability.libero = {
+ability.protean = {
+    info: function() {return `Changes the type of the user to match the type of the used move`},
+    rarity: 3,
 }
 
 ability.simple = {
+    info: function() {return `Stat changes on the user are boosted by a stage`},
+    rarity: 3,
 }
 
 ability.parentalBond = {
+    info: function() {return `Moves are executed a second time, at half power`},
+    rarity: 3,
 }
 
 ability.moody = {
+    info: function() {return `Every turn, a stat rises by 100% while one lowers by 50%`},
+    rarity: 3,
 }
+
+ability.darkAura = {
+    info: function() {return `Multiplies by x1.1 the power of Dark-type moves of all team members`},
+    rarity: 3,
+}
+
+
+ability.normalize = {
+    info: function() {return `All moves become Normal-type moves, and their power is multiplied by x1.2`},
+    rarity: 3,
+}
+
 
 ability.ferrilate = {
-    type: [`steel`],
-    info: function() {return `Normal-type moves become Steel-type moves, and their power is multiplied by x1.5`},
+    info: function() {return `Normal-type moves become Steel-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
-ability.cryolate = {
-    type: [`ice`],
-    info: function() {return `Normal-type moves become Ice-type moves, and their power is multiplied by x1.5`},
+ability.glaciate = {
+    info: function() {return `Normal-type moves become Ice-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
 ability.terralate = {
-    type: [`ground`],
-    info: function() {return `Normal-type moves become Ground-type moves, and their power is multiplied by x1.5`},
+    info: function() {return `Normal-type moves become Ground-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
 ability.toxilate = {
-    type: [`poison`],
-    info: function() {return `Normal-type moves become Poison-type moves, and their power is multiplied by x1.5`},
+    info: function() {return `Normal-type moves become Poison-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
 ability.hydrolate = {
-    type: [`water`],
-    info: function() {return `Normal-type moves become Water-type moves, and their power is multiplied by x1.5`},
+    info: function() {return `Normal-type moves become Water-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
 ability.pyrolate = {
-    type: [`fire`],
-    info: function() {return `Normal-type moves become Fire-type moves, and their power is multiplied by x1.5`},
+    info: function() {return `Normal-type moves become Fire-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
 ability.chrysilate = {
-    type: [`bug`],
-    info: function() {return `Normal-type moves become Bug-type moves, and their power is multiplied by x1.5`},
+    info: function() {return `Normal-type moves become Bug-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
-ability.surgilate = {
-    type: [`electric`],
-    info: function() {return `Normal-type moves become Electric-type moves, and their power is multiplied by x1.5`},
+ability.galvanize = {
+    info: function() {return `Normal-type moves become Electric-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
 ability.gloomilate = {
-    type: [`dark`],
-    info: function() {return `Normal-type moves become Dark-type moves, and their power is multiplied by x1.5`},
+    info: function() {return `Normal-type moves become Dark-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
 ability.espilate = {
-    type: [`psychic`],
-    info: function() {return `Normal-type moves become Psychic-type moves, and their power is multiplied by x1.5`},
+    info: function() {return `Normal-type moves become Psychic-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
 ability.aerilate = {
-    type: [`flying`],
-    info: function() {return `Normal-type moves become Flying-type moves, and their power is multiplied by x1.5`},
+    info: function() {return `Normal-type moves become Flying-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
 ability.pixilate = {
-    type: [`fairy`],
-    info: function() {return `Normal-type moves become Fairy-type moves, and their power is multiplied by x1.5`},
+    info: function() {return `Normal-type moves become Fairy-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
+}
+
+ability.verdify = {
+    info: function() {return `Normal-type moves become Grass-type moves, and their power is multiplied by x1.3`},
+    rarity: 3,
 }
 
 

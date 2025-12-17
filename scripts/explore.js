@@ -255,9 +255,10 @@ for (let t of thresholds) {
     if (areas[saved.currentArea].difficulty!=undefined) hpMultiplier = areas[saved.currentArea].difficulty
 
 
+
     //abilities
-    if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.intimidate.id) {wildBuffs.atkdown1 = 3; updateWildBuffs() }
-    if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.dauntingLook.id) {wildBuffs.satkdown1 = 3; updateWildBuffs() }
+    if (testAbility(`active`,  ability.intimidate.id ) ) {wildBuffs.atkdown1 = 3; updateWildBuffs() }
+    if (testAbility(`active`,  ability.dauntingLook.id ) ) {wildBuffs.satkdown1 = 3; updateWildBuffs() }
 
 
 
@@ -390,10 +391,9 @@ function dropItem(){
      for (const slot in team) {
 
         if (team[slot].pkmn === undefined ) continue
-        if (pkmn[ team[slot].pkmn.id ]?.ability == ability.pickPocket.id) rareDropChance += 0.01
+        if (testAbility(slot, ability.pickPocket.id) ) rareDropChance += 0.01
         if (team[slot].item == item.luckIncense.id) rareDropChance += item.luckIncense.power()/100
      }
-
 
     if (areas[saved.currentArea].drops?.uncommon && rng(0.15)) drop = arrayPick(areas[saved.currentArea].drops?.uncommon).id
     if (areas[saved.currentArea].drops?.rare && rng(rareDropChance)) drop = arrayPick(areas[saved.currentArea].drops?.rare).id
@@ -687,19 +687,52 @@ function updateWildPkmn(){
 
 
 
-    const percent = (wildPkmnHp / wildPkmnHpMax) * 100;
-    if (percent > 60) document.getElementById("exploe-wild-hp").style.background = "rgb(130, 211, 130)"
-    if (percent < 60) document.getElementById("exploe-wild-hp").style.background = "rgba(221, 168, 99, 1)"
-    if (percent < 30) document.getElementById("exploe-wild-hp").style.background = "rgba(219, 112, 112, 1)"
 
-    document.getElementById("exploe-wild-hp").style.width = percent + "%"; 
+
+
+    const percent = (wildPkmnHp / wildPkmnHpMax) * 100;
+
+const hp1 = document.getElementById("exploe-wild-hp");
+const hp2 = document.getElementById("exploe-wild-hp-2");
+
+if (areas[saved.currentArea].encounter && areas[saved.currentArea].difficulty == tier2difficulty) {
+    hp2.style.display = "flex";
+    hp2.style.background = "rgb(134, 141, 238)";
+
+    if (percent > 50) {
+        hp2.style.width = ((percent - 50) * 2) + "%";
+        hp1.style.width = "100%";
+        hp1.style.background = "rgb(130, 211, 130)";
+
+    } else {
+        hp2.style.width = "0%";
+        hp1.style.width = (percent * 2) + "%";
+
+    if (percent > 30) hp1.style.background = "rgb(130, 211, 130)";
+    else if (percent > 15) hp1.style.background = "rgba(221, 168, 99, 1)";
+    else hp1.style.background = "rgba(219, 112, 112, 1)";
+    }
+
+} else {
+    hp2.style.display = "none";
+    hp1.style.width = percent + "%";
+
+    if (percent > 60) hp1.style.background = "rgb(130, 211, 130)";
+    else if (percent > 30) hp1.style.background = "rgba(221, 168, 99, 1)";
+    else hp1.style.background = "rgba(219, 112, 112, 1)";
+}
+
+
+
+
+
 
     if (percent <= 0) { //on wild death enemy kill
 
 
     //abilities
-    if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.moxie.id) team[exploreActiveMember].buffs.atkup1 = 3
-    if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.strategist.id) team[exploreActiveMember].buffs.satkup1 = 3
+    if (testAbility(`active`,  ability.moxie.id)) team[exploreActiveMember].buffs.atkup1 = 3
+    if (testAbility(`active`,  ability.strategist.id)) team[exploreActiveMember].buffs.satkup1 = 3
 
 
     for (const buff in wildBuffs){ if ( wildBuffs[buff]>0) wildBuffs[buff] = 0 }
@@ -1263,7 +1296,7 @@ function setPkmnTeam(){
         if (!div.classList.contains("member-inactive")) return;
         if (pkmn[ team[i].pkmn.id ].playerHp <= 0) return;
 
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.naturalCure.id) {team[exploreActiveMember].buffs.confused = 0; team[exploreActiveMember].buffs.burn = 0; team[exploreActiveMember].buffs.freeze = 0; team[exploreActiveMember].buffs.paralysis = 0; team[exploreActiveMember].buffs.poisoned = 0; team[exploreActiveMember].buffs.sleep = 0; updateTeamBuffs() }
+        if (testAbility(`active`,  ability.naturalCure.id )) {team[exploreActiveMember].buffs.confused = 0; team[exploreActiveMember].buffs.burn = 0; team[exploreActiveMember].buffs.freeze = 0; team[exploreActiveMember].buffs.paralysis = 0; team[exploreActiveMember].buffs.poisoned = 0; team[exploreActiveMember].buffs.sleep = 0; updateTeamBuffs() }
 
         barProgressPlayer = 0
         barPlayer.style.width = 0
@@ -1687,8 +1720,8 @@ document.addEventListener("contextmenu", e => {
         document.getElementById("tooltipTop").style.display = `none`
         document.getElementById("tooltipTitle").innerHTML = `${format(el.dataset.buff)}`
         document.getElementById("tooltipMid").style.display = `none`
-        if (el.dataset.buff==="burn") document.getElementById("tooltipBottom").innerHTML = `Halves Physical Attack and deals 1/4 of total hp`
-        if (el.dataset.buff==="poisoned") document.getElementById("tooltipBottom").innerHTML = `Halves Special Attack and deals 1/4 of total hp`
+        if (el.dataset.buff==="burn") document.getElementById("tooltipBottom").innerHTML = `Halves Physical Attack and deals damage every turn`
+        if (el.dataset.buff==="poisoned") document.getElementById("tooltipBottom").innerHTML = `Halves Special Attack and deals damage every turn`
         if (el.dataset.buff==="sleep") document.getElementById("tooltipBottom").innerHTML = `Moves fail to deal damage`
         if (el.dataset.buff==="freeze") document.getElementById("tooltipBottom").innerHTML = `Moves fail to deal damage`
         if (el.dataset.buff==="confused") document.getElementById("tooltipBottom").innerHTML = `50% chance for moves to fail to deal damage`
@@ -1787,6 +1820,9 @@ document.addEventListener("contextmenu", e => {
         document.getElementById("tooltipTop").style.display = "none";
         document.getElementById("tooltipTitle").style.display = "none";
         document.getElementById("tooltipMid").style.display = "none";
+        hiddenAbility = `WIP`
+        if (pkmn[el.dataset.pkmn].hiddenAbility != undefined) hiddenAbility = format(pkmn[el.dataset.pkmn].hiddenAbility.id)
+
         document.getElementById("tooltipBottom").innerHTML = `
         <div id="tooltip-inspect-pkmn">
             
@@ -1826,7 +1862,7 @@ document.addEventListener("contextmenu", e => {
                     </div>
                     <div class="pkmn-stats-panel-bst">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M9 19v-2H5.675q-.5 0-.7-.45t.125-.8l6.15-6.9q.3-.35.75-.35t.75.35l6.15 6.9q.325.35.125.8t-.7.45H15v2q0 .425-.288.713T14 20h-4q-.425 0-.712-.288T9 19m3-13l-5.025 5.675q-.15.15-.35.238t-.4.087q-.65 0-.912-.575t.162-1.075l5.775-6.5q.3-.35.75-.35t.75.35l5.775 6.5q.425.5.163 1.075t-.913.575q-.2 0-.4-.075t-.35-.25z"/></svg>
-                        ${returnStatDots(el.dataset.pkmn, "spe")}
+                         ${ returnStatDots(el.dataset.pkmn, "spe")}
                     </div>
                 </div>
             </div>
@@ -1836,7 +1872,7 @@ document.addEventListener("contextmenu", e => {
                     
                     <div style="box-shadow: none; outline:none">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none"><path fill="currentColor" fill-opacity="0.25" fill-rule="evenodd" d="M2.455 11.116C3.531 9.234 6.555 5 12 5c5.444 0 8.469 4.234 9.544 6.116c.221.386.331.58.32.868c-.013.288-.143.476-.402.852C20.182 14.694 16.706 19 12 19s-8.182-4.306-9.462-6.164c-.26-.376-.39-.564-.401-.852c-.013-.288.098-.482.318-.868M12 15a3 3 0 1 0 0-6a3 3 0 0 0 0 6" clip-rule="evenodd"/><path stroke="currentColor" stroke-width="1.2" d="M12 5c-5.444 0-8.469 4.234-9.544 6.116c-.221.386-.331.58-.32.868c.013.288.143.476.402.852C3.818 14.694 7.294 19 12 19s8.182-4.306 9.462-6.164c.26-.376.39-.564.401-.852s-.098-.482-.319-.868C20.47 9.234 17.444 5 12 5Z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.2"/></g></svg>
-                        [Coming Soon]</div>
+                        ${hiddenAbility}</div>
 
                     <div style="box-shadow: none; outline:none">
                         ${returnDivisionLetter(returnPkmnDivision(pkmn[el.dataset.pkmn]))}</div>
@@ -1883,6 +1919,8 @@ document.addEventListener("contextmenu", e => {
         if (pkmn[el.dataset.pkmnEditor].evolve && pkmn[el.dataset.pkmnEditor].evolve()[1].item && item[pkmn[el.dataset.pkmnEditor].evolve()[1].item.id] != undefined){
             let levelRequired = wildAreaLevel2
             if (pkmn[el.dataset.pkmnEditor].evolve()[1].item.id == "linkStone") levelRequired = wildAreaLevel4
+            if (pkmn[el.dataset.pkmnEditor].evolve()[1].item.id == "oddRock") levelRequired = wildAreaLevel4
+            if (pkmn[el.dataset.pkmnEditor].evolve()[1].pkmn.id.slice(0, 4) === "mega") levelRequired = 100
             evolutionTag = `<span>Unlocks ${format(pkmn[el.dataset.pkmnEditor].evolve()[1].pkmn.id)} by using a ${format(item[pkmn[el.dataset.pkmnEditor].evolve()[1].item.id].id)} at level ${levelRequired}+ ❌</span>`
             if (pkmn[ pkmn[el.dataset.pkmnEditor].evolve()[1].pkmn.id ].caught>0) evolutionTag = `<span>Unlocks ${format(pkmn[el.dataset.pkmnEditor].evolve()[1].pkmn.id)} by using a ${format(item[pkmn[el.dataset.pkmnEditor].evolve()[1].item.id].id)} at level ${levelRequired}+ ✔️</span>`
         }
@@ -1951,18 +1989,35 @@ document.addEventListener("contextmenu", e => {
     
     if (pkmn[el.dataset.pkmnEditor].ability == undefined) pkmn[el.dataset.pkmnEditor].ability = learnPkmnAbility(pkmn[el.dataset.pkmnEditor].id)    
     
+    const abilityIcon = `<svg style="margin-right:0.3rem"xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M22.833 10.117L16.937 7.24c-.07-.035-.106-.106-.142-.177l-2.912-5.896c-.498-1.03-1.776-1.457-2.807-.96a2.1 2.1 0 0 0-.959.96L7.205 7.063a.8.8 0 0 1-.142.177l-5.896 2.913c-1.03.497-1.457 1.776-.96 2.806a2.1 2.1 0 0 0 .96.96l5.896 2.876c.07.036.106.107.142.142l2.948 5.896c.497 1.03 1.776 1.457 2.806.96a2.1 2.1 0 0 0 .959-.96l2.877-5.896c.036-.07.107-.142.142-.142l5.896-2.912c1.03-.498 1.457-1.776.96-2.806c-.178-.427-.533-.746-.96-.96m-4.368.427l-2.735 2.38c-.533.497-.924 1.136-1.066 1.847l-.71 3.551c-.036.143-.178.25-.32.214c-.071 0-.107-.036-.142-.107l-2.38-2.735c-.497-.533-1.137-.923-1.847-1.066l-3.552-.71c-.142-.035-.249-.178-.213-.32c0-.07.035-.106.106-.142l2.735-2.38c.533-.497.924-1.136 1.066-1.847l.71-3.551c.036-.143.178-.25.32-.214a.27.27 0 0 1 .142.071l2.38 2.735c.497.533 1.137.924 1.847 1.066l3.552.71c.142.036.249.178.213.32a.4.4 0 0 1-.106.178"/></svg>`
     let abilityTier = ``
     if (ability[ pkmn[el.dataset.pkmnEditor].ability ].rarity==2) abilityTier = ` <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21.97 14.607a1.07 1.07 0 0 1-.73 1l-1.88.62a3.9 3.9 0 0 0-1.56 1a4.06 4.06 0 0 0-1 1.57l-.65 1.87a1.14 1.14 0 0 1-.38.52a1.1 1.1 0 0 1-.63.2a1 1 0 0 1-.62-.2a1.07 1.07 0 0 1-.39-.53l-.63-1.88a4 4 0 0 0-2.53-2.54l-1.88-.62a1.13 1.13 0 0 1-.53-.39a1.06 1.06 0 0 1 .54-1.64l1.87-.62a4 4 0 0 0 2.56-2.55l.62-1.86a1 1 0 0 1 .36-.52a1 1 0 0 1 .61-.23a1 1 0 0 1 .64.18a1 1 0 0 1 .41.52l.63 1.9a4 4 0 0 0 2.55 2.56l1.87.65a1 1 0 0 1 .52.38a1.1 1.1 0 0 1 .23.61M12.1 7.656a1 1 0 0 1-.67.93l-1.34.44a2.6 2.6 0 0 0-1 .64a2.7 2.7 0 0 0-.64 1l-.47 1.34a1 1 0 0 1-.34.47a1.05 1.05 0 0 1-.58.19a1 1 0 0 1-.93-.68l-.44-1.34a2.6 2.6 0 0 0-.64-1a2.7 2.7 0 0 0-1-.64l-1.35-.45a.92.92 0 0 1-.48-.36a.93.93 0 0 1-.19-.57a1 1 0 0 1 .19-.58a1 1 0 0 1 .49-.34l1.34-.45a2.7 2.7 0 0 0 1-.64c.29-.277.509-.62.64-1l.45-1.32a1 1 0 0 1 .33-.48a.93.93 0 0 1 .56-.2a.87.87 0 0 1 .58.16a1 1 0 0 1 .38.47l.45 1.37c.135.378.354.72.64 1a2.7 2.7 0 0 0 1 .64l1.35.47a1 1 0 0 1 .65.92z"/></svg>`
     if (ability[ pkmn[el.dataset.pkmnEditor].ability ].rarity==3) abilityTier = ` <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21.738 16.13a1 1 0 0 1-.19.61a1 1 0 0 1-.52.38l-1.71.57a3.6 3.6 0 0 0-1.4.86a3.5 3.5 0 0 0-.86 1.4l-.6 1.7a1 1 0 0 1-.36.51a1.1 1.1 0 0 1-.62.19a1 1 0 0 1-1-.71l-.57-1.71a3.5 3.5 0 0 0-.86-1.4a3.8 3.8 0 0 0-1.4-.87l-1.71-.56a1.1 1.1 0 0 1-.51-.37a1.1 1.1 0 0 1-.21-.62a1 1 0 0 1 .71-1l1.72-.57a3.54 3.54 0 0 0 2.28-2.28l.57-1.69a1 1 0 0 1 .95-.73c.215 0 .426.059.61.17c.182.125.322.303.4.51l.58 1.74a3.54 3.54 0 0 0 2.28 2.28l1.7.6a1 1 0 0 1 .51.38a1 1 0 0 1 .21.61m-9.999-6.36a1 1 0 0 1-.17.55a1 1 0 0 1-.47.35l-1.26.42c-.353.122-.673.32-.94.58a2.5 2.5 0 0 0-.58.94l-.43 1.24a.9.9 0 0 1-.35.47a1 1 0 0 1-.56.18a1 1 0 0 1-.57-.19a1 1 0 0 1-.34-.47l-.41-1.25a2.44 2.44 0 0 0-.58-.93a2.2 2.2 0 0 0-.93-.58l-1.25-.42a.93.93 0 0 1-.48-.35a1 1 0 0 1 .48-1.47l1.25-.41a2.49 2.49 0 0 0 1.53-1.53l.41-1.23a1 1 0 0 1 .32-.47a1 1 0 0 1 .55-.2a1 1 0 0 1 .57.16a1 1 0 0 1 .37.46l.42 1.28a2.49 2.49 0 0 0 1.53 1.53l1.25.43a.92.92 0 0 1 .46.35a.94.94 0 0 1 .18.56m5.789-5.36a1 1 0 0 1-.17.51a.82.82 0 0 1-.42.3l-.62.21a.84.84 0 0 0-.52.52l-.22.63a.93.93 0 0 1-.29.39a.82.82 0 0 1-.52.18a1.1 1.1 0 0 1-.49-.15a.9.9 0 0 1-.32-.44l-.21-.62a.7.7 0 0 0-.2-.32a.76.76 0 0 0-.32-.2l-.62-.2a1 1 0 0 1-.42-.31a.9.9 0 0 1-.16-.51a.94.94 0 0 1 .17-.51a.9.9 0 0 1 .42-.3l.61-.2a.9.9 0 0 0 .33-.2a.9.9 0 0 0 .2-.33l.21-.62c.06-.155.155-.292.28-.4a1 1 0 0 1 .49-.19a.94.94 0 0 1 .53.16a1 1 0 0 1 .32.41l.21.64a.9.9 0 0 0 .2.33a1 1 0 0 0 .32.2l.63.21a1 1 0 0 1 .41.3a.87.87 0 0 1 .17.51"/></svg>`
-
     document.getElementById("pkmn-edit-ability").className = ""
-
     if (ability[ pkmn[el.dataset.pkmnEditor].ability ].rarity==2) document.getElementById("pkmn-edit-ability").classList.add("ability-uncommon")
     if (ability[ pkmn[el.dataset.pkmnEditor].ability ].rarity==3) document.getElementById("pkmn-edit-ability").classList.add("ability-rare")
-
     document.getElementById("pkmn-edit-ability").dataset.ability = pkmn[el.dataset.pkmnEditor].ability
+    document.getElementById("pkmn-edit-ability").innerHTML = `<span>${abilityIcon+format(pkmn[el.dataset.pkmnEditor].ability)}</span>${abilityTier}`
 
-    document.getElementById("pkmn-edit-ability").innerHTML = `<span>${format(pkmn[el.dataset.pkmnEditor].ability)}</span>${abilityTier}`
+
+    let abilityHiddenIcon = `<svg style="margin-right:0.3rem"xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none"><path fill="currentColor" fill-opacity="0.25" fill-rule="evenodd" d="M2.455 11.116C3.531 9.234 6.555 5 12 5c5.444 0 8.469 4.234 9.544 6.116c.221.386.331.58.32.868c-.013.288-.143.476-.402.852C20.182 14.694 16.706 19 12 19s-8.182-4.306-9.462-6.164c-.26-.376-.39-.564-.401-.852c-.013-.288.098-.482.318-.868M12 15a3 3 0 1 0 0-6a3 3 0 0 0 0 6" clip-rule="evenodd"/><path stroke="currentColor" stroke-width="1.2" d="M12 5c-5.444 0-8.469 4.234-9.544 6.116c-.221.386-.331.58-.32.868c.013.288.143.476.402.852C3.818 14.694 7.294 19 12 19s8.182-4.306 9.462-6.164c.26-.376.39-.564.401-.852s-.098-.482-.319-.868C20.47 9.234 17.444 5 12 5Z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.2"/></g></svg>`
+    if (pkmn[el.dataset.pkmnEditor].hiddenAbility){
+    let abilityHiddenTier = ``
+    if (ability[ pkmn[el.dataset.pkmnEditor].hiddenAbility.id ].rarity==2) abilityHiddenTier = ` <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21.97 14.607a1.07 1.07 0 0 1-.73 1l-1.88.62a3.9 3.9 0 0 0-1.56 1a4.06 4.06 0 0 0-1 1.57l-.65 1.87a1.14 1.14 0 0 1-.38.52a1.1 1.1 0 0 1-.63.2a1 1 0 0 1-.62-.2a1.07 1.07 0 0 1-.39-.53l-.63-1.88a4 4 0 0 0-2.53-2.54l-1.88-.62a1.13 1.13 0 0 1-.53-.39a1.06 1.06 0 0 1 .54-1.64l1.87-.62a4 4 0 0 0 2.56-2.55l.62-1.86a1 1 0 0 1 .36-.52a1 1 0 0 1 .61-.23a1 1 0 0 1 .64.18a1 1 0 0 1 .41.52l.63 1.9a4 4 0 0 0 2.55 2.56l1.87.65a1 1 0 0 1 .52.38a1.1 1.1 0 0 1 .23.61M12.1 7.656a1 1 0 0 1-.67.93l-1.34.44a2.6 2.6 0 0 0-1 .64a2.7 2.7 0 0 0-.64 1l-.47 1.34a1 1 0 0 1-.34.47a1.05 1.05 0 0 1-.58.19a1 1 0 0 1-.93-.68l-.44-1.34a2.6 2.6 0 0 0-.64-1a2.7 2.7 0 0 0-1-.64l-1.35-.45a.92.92 0 0 1-.48-.36a.93.93 0 0 1-.19-.57a1 1 0 0 1 .19-.58a1 1 0 0 1 .49-.34l1.34-.45a2.7 2.7 0 0 0 1-.64c.29-.277.509-.62.64-1l.45-1.32a1 1 0 0 1 .33-.48a.93.93 0 0 1 .56-.2a.87.87 0 0 1 .58.16a1 1 0 0 1 .38.47l.45 1.37c.135.378.354.72.64 1a2.7 2.7 0 0 0 1 .64l1.35.47a1 1 0 0 1 .65.92z"/></svg>`
+    if (ability[ pkmn[el.dataset.pkmnEditor].hiddenAbility.id ].rarity==3) abilityHiddenTier = ` <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21.738 16.13a1 1 0 0 1-.19.61a1 1 0 0 1-.52.38l-1.71.57a3.6 3.6 0 0 0-1.4.86a3.5 3.5 0 0 0-.86 1.4l-.6 1.7a1 1 0 0 1-.36.51a1.1 1.1 0 0 1-.62.19a1 1 0 0 1-1-.71l-.57-1.71a3.5 3.5 0 0 0-.86-1.4a3.8 3.8 0 0 0-1.4-.87l-1.71-.56a1.1 1.1 0 0 1-.51-.37a1.1 1.1 0 0 1-.21-.62a1 1 0 0 1 .71-1l1.72-.57a3.54 3.54 0 0 0 2.28-2.28l.57-1.69a1 1 0 0 1 .95-.73c.215 0 .426.059.61.17c.182.125.322.303.4.51l.58 1.74a3.54 3.54 0 0 0 2.28 2.28l1.7.6a1 1 0 0 1 .51.38a1 1 0 0 1 .21.61m-9.999-6.36a1 1 0 0 1-.17.55a1 1 0 0 1-.47.35l-1.26.42c-.353.122-.673.32-.94.58a2.5 2.5 0 0 0-.58.94l-.43 1.24a.9.9 0 0 1-.35.47a1 1 0 0 1-.56.18a1 1 0 0 1-.57-.19a1 1 0 0 1-.34-.47l-.41-1.25a2.44 2.44 0 0 0-.58-.93a2.2 2.2 0 0 0-.93-.58l-1.25-.42a.93.93 0 0 1-.48-.35a1 1 0 0 1 .48-1.47l1.25-.41a2.49 2.49 0 0 0 1.53-1.53l.41-1.23a1 1 0 0 1 .32-.47a1 1 0 0 1 .55-.2a1 1 0 0 1 .57.16a1 1 0 0 1 .37.46l.42 1.28a2.49 2.49 0 0 0 1.53 1.53l1.25.43a.92.92 0 0 1 .46.35a.94.94 0 0 1 .18.56m5.789-5.36a1 1 0 0 1-.17.51a.82.82 0 0 1-.42.3l-.62.21a.84.84 0 0 0-.52.52l-.22.63a.93.93 0 0 1-.29.39a.82.82 0 0 1-.52.18a1.1 1.1 0 0 1-.49-.15a.9.9 0 0 1-.32-.44l-.21-.62a.7.7 0 0 0-.2-.32a.76.76 0 0 0-.32-.2l-.62-.2a1 1 0 0 1-.42-.31a.9.9 0 0 1-.16-.51a.94.94 0 0 1 .17-.51a.9.9 0 0 1 .42-.3l.61-.2a.9.9 0 0 0 .33-.2a.9.9 0 0 0 .2-.33l.21-.62c.06-.155.155-.292.28-.4a1 1 0 0 1 .49-.19a.94.94 0 0 1 .53.16a1 1 0 0 1 .32.41l.21.64a.9.9 0 0 0 .2.33a1 1 0 0 0 .32.2l.63.21a1 1 0 0 1 .41.3a.87.87 0 0 1 .17.51"/></svg>`
+    document.getElementById("pkmn-edit-ability-hidden").className = ""
+    if (ability[ pkmn[el.dataset.pkmnEditor].hiddenAbility.id ].rarity==2) document.getElementById("pkmn-edit-ability-hidden").classList.add("ability-uncommon")
+    if (ability[ pkmn[el.dataset.pkmnEditor].hiddenAbility.id ].rarity==3) document.getElementById("pkmn-edit-ability-hidden").classList.add("ability-rare")
+    if (pkmn[el.dataset.pkmnEditor].hiddenAbilityUnlocked!=true) abilityHiddenIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M2 16c0-2.828 0-4.243.879-5.121C3.757 10 5.172 10 8 10h8c2.828 0 4.243 0 5.121.879C22 11.757 22 13.172 22 16s0 4.243-.879 5.121C20.243 22 18.828 22 16 22H8c-2.828 0-4.243 0-5.121-.879C2 20.243 2 18.828 2 16" opacity="0.5"/><path fill="currentColor" d="M6.75 8a5.25 5.25 0 0 1 10.5 0v2.004c.567.005 1.064.018 1.5.05V8a6.75 6.75 0 0 0-13.5 0v2.055a24 24 0 0 1 1.5-.051z"/></svg>`
+    if (pkmn[el.dataset.pkmnEditor].hiddenAbilityUnlocked!=true) {document.getElementById("pkmn-edit-ability-hidden").style.filter = "brightness(0.5)"} else {document.getElementById("pkmn-edit-ability-hidden").style.filter = "brightness(1)"}
+    document.getElementById("pkmn-edit-ability-hidden").dataset.ability = pkmn[el.dataset.pkmnEditor].hiddenAbility.id
+    document.getElementById("pkmn-edit-ability-hidden").innerHTML = `<span>${abilityHiddenIcon+format(pkmn[el.dataset.pkmnEditor].hiddenAbility.id)}</span>${abilityHiddenTier}`
+    } else{
+    document.getElementById("pkmn-edit-ability-hidden").className = ""
+    document.getElementById("pkmn-edit-ability-hidden").innerHTML = `<span>${abilityHiddenIcon}WIP</span>`
+    }
+
+
 
 
     function updateMoves() {
@@ -2462,7 +2517,7 @@ function exploreCombatPlayer() {
     
 
     //abilities
-    if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.prankster.id && move[nextMovePlayer].type == "dark") moveTimerPlayer /= 1.5
+    if (testAbility(`active`, ability.prankster.id) && moveType == "dark") moveTimerPlayer /= 1.5
 
 
     //buff modifiers
@@ -2518,7 +2573,7 @@ function exploreCombatPlayer() {
         if (move[nextMovePlayer].powerMod) movePower *= move[nextMovePlayer].powerMod()
 
         //abilities
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.technician.id && movePower<60 ) movePower *= 1.5
+        if (testAbility(`active`, ability.technician.id) && movePower<60 ) movePower *= 1.5
 
 
             
@@ -2544,7 +2599,7 @@ function exploreCombatPlayer() {
             if (team[exploreActiveMember].buffs?.poisoned > 0) totalPower /=1.5
 
 
-         if ( pkmn[ team[exploreActiveMember].pkmn.id ]?.ability != ability.unaware.id ){
+         if ( testAbility(`active`,  ability.unaware.id) == false ){
 
             if (wildBuffs.sdefup1 > 0) totalPower /=1.5
             if (wildBuffs.sdefup2 > 0) totalPower /=2
@@ -2560,7 +2615,7 @@ function exploreCombatPlayer() {
             if (team[exploreActiveMember].buffs?.atkup2 > 0) totalPower *=2
             if (team[exploreActiveMember].buffs?.burn > 0) totalPower /=1.5
 
-         if ( pkmn[ team[exploreActiveMember].pkmn.id ]?.ability != ability.unaware.id ){
+         if ( testAbility(`active`,  ability.unaware.id ) == false ){
 
             if (wildBuffs.defup1 > 0) totalPower /=1.5
             if (wildBuffs.defup2 > 0) totalPower /=2
@@ -2569,17 +2624,39 @@ function exploreCombatPlayer() {
 
         }
 
+
+        let moveType = move[nextMovePlayer].type
+        if (testAbility(`active`, ability.normalize.id)) {moveType = "normal"; totalPower*=1.2}
+
+        if (testAbility(`active`, ability.ferrilate.id) && moveType=="normal") {moveType = "steel"; totalPower*=1.3}
+        if (testAbility(`active`, ability.glaciate.id) && moveType=="normal") {moveType = "ice"; totalPower*=1.3}
+        if (testAbility(`active`, ability.terralate.id) && moveType=="normal") {moveType = "ground"; totalPower*=1.3}
+        if (testAbility(`active`, ability.toxilate.id) && moveType=="normal") {moveType = "poison"; totalPower*=1.3}
+        if (testAbility(`active`, ability.hydrolate.id) && moveType=="normal") {moveType = "water"; totalPower*=1.3}
+        if (testAbility(`active`, ability.pyrolate.id) && moveType=="normal") {moveType = "fire"; totalPower*=1.3}
+        if (testAbility(`active`, ability.chrysilate.id) && moveType=="normal") {moveType = "bug"; totalPower*=1.3}
+        if (testAbility(`active`, ability.galvanize.id) && moveType=="normal") {moveType = "electric"; totalPower*=1.3}
+        if (testAbility(`active`, ability.gloomilate.id) && moveType=="normal") {moveType = "dark"; totalPower*=1.3}
+        if (testAbility(`active`, ability.espilate.id) && moveType=="normal") {moveType = "psychic"; totalPower*=1.3}
+        if (testAbility(`active`, ability.aerilate.id) && moveType=="normal") {moveType = "flying"; totalPower*=1.3}
+        if (testAbility(`active`, ability.pixilate.id) && moveType=="normal") {moveType = "fairy"; totalPower*=1.3}
+
+
+
+        if (testAbility(`active`, ability.protean.id)) pkmn[team[exploreActiveMember].pkmn.id].type = [moveType]
+
+
         //stab
         let stabBonus = 1.5
-        if (atacker.type.includes(move[nextMovePlayer].type) && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.adaptability.id) stabBonus = 1.7
+        if (atacker.type.includes(moveType) && testAbility(`active`,  ability.adaptability.id ) ) stabBonus = 1.7
 
-        if (atacker.type.includes(move[nextMovePlayer].type)) totalPower *=stabBonus
+        if (atacker.type.includes(moveType)) totalPower *=stabBonus
         //type effectiveness
-        let typeMultiplier = typeEffectiveness(move[nextMovePlayer].type, pkmn[saved.currentPkmn].type)
+        let typeMultiplier = typeEffectiveness(moveType, pkmn[saved.currentPkmn].type)
 
-        if ( pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.scrappy.id && pkmn[saved.currentPkmn].type.includes("ghost") && (move[nextMovePlayer].type == 'fighting' || move[nextMovePlayer].type == 'normal')  ) typeMultiplier=1
-        if ( pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.tintedLens.id && typeMultiplier == 0.5 ) typeMultiplier=1
-        if ( pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.noGuard.id && typeMultiplier == 0 ) typeMultiplier=1
+        if ( testAbility(`active`, ability.scrappy.id) && pkmn[saved.currentPkmn].type.includes("ghost") && (moveType == 'fighting' || moveType == 'normal')  ) typeMultiplier=1
+        if ( testAbility(`active`, ability.tintedLens.id) && typeMultiplier == 0.5 ) typeMultiplier=1
+        if ( testAbility(`active`, ability.noGuard.id) && typeMultiplier == 0 ) typeMultiplier=1
 
 
         totalPower *= typeMultiplier
@@ -2587,24 +2664,24 @@ function exploreCombatPlayer() {
 
 
         //items
-        if (team[exploreActiveMember].item == item.blackBelt.id && move[nextMovePlayer].type == 'fighting') totalPower *= (item.blackBelt.power() /100) +1
-        if (team[exploreActiveMember].item == item.blackGlasses.id && move[nextMovePlayer].type == 'dark') totalPower *= (item.blackGlasses.power() /100) +1
-        if (team[exploreActiveMember].item == item.charcoal.id && move[nextMovePlayer].type == 'fire') totalPower *= (item.charcoal.power() /100) +1
-        if (team[exploreActiveMember].item == item.dragonFang.id && move[nextMovePlayer].type == 'dragon') totalPower *= (item.dragonFang.power() /100) +1
-        if (team[exploreActiveMember].item == item.fairyFeather.id && move[nextMovePlayer].type == 'fairy') totalPower *= (item.fairyFeather.power() /100) +1
-        if (team[exploreActiveMember].item == item.hardStone.id && move[nextMovePlayer].type == 'rock') totalPower *= (item.hardStone.power() /100) +1
-        if (team[exploreActiveMember].item == item.magnet.id && move[nextMovePlayer].type == 'electric') totalPower *= (item.magnet.power() /100) +1
-        if (team[exploreActiveMember].item == item.metalCoat.id && move[nextMovePlayer].type == 'steel') totalPower *= (item.metalCoat.power() /100) +1
-        if (team[exploreActiveMember].item == item.miracleSeed.id && move[nextMovePlayer].type == 'grass') totalPower *= (item.miracleSeed.power() /100) +1
-        if (team[exploreActiveMember].item == item.mysticWater.id && move[nextMovePlayer].type == 'water') totalPower *= (item.mysticWater.power() /100) +1
-        if (team[exploreActiveMember].item == item.neverMeltIce.id && move[nextMovePlayer].type == 'ice') totalPower *= (item.neverMeltIce.power() /100) +1
-        if (team[exploreActiveMember].item == item.poisonBarb.id && move[nextMovePlayer].type == 'poison') totalPower *= (item.poisonBarb.power() /100) +1
-        if (team[exploreActiveMember].item == item.sharpBeak.id && move[nextMovePlayer].type == 'flying') totalPower *= (item.sharpBeak.power() /100) +1
-        if (team[exploreActiveMember].item == item.silkScarf.id && move[nextMovePlayer].type == 'normal') totalPower *= (item.silkScarf.power() /100) +1
-        if (team[exploreActiveMember].item == item.silverPowder.id && move[nextMovePlayer].type == 'bug') totalPower *= (item.silverPowder.power() /100) +1
-        if (team[exploreActiveMember].item == item.softSand.id && move[nextMovePlayer].type == 'ground') totalPower *= (item.softSand.power() /100) +1
-        if (team[exploreActiveMember].item == item.spellTag.id && move[nextMovePlayer].type == 'ghost') totalPower *= (item.spellTag.power() /100) +1
-        if (team[exploreActiveMember].item == item.twistedSpoon.id && move[nextMovePlayer].type == 'psychic') totalPower *= (item.twistedSpoon.power() /100) +1
+        if (team[exploreActiveMember].item == item.blackBelt.id && moveType == 'fighting') totalPower *= (item.blackBelt.power() /100) +1
+        if (team[exploreActiveMember].item == item.blackGlasses.id && moveType == 'dark') totalPower *= (item.blackGlasses.power() /100) +1
+        if (team[exploreActiveMember].item == item.charcoal.id && moveType == 'fire') totalPower *= (item.charcoal.power() /100) +1
+        if (team[exploreActiveMember].item == item.dragonFang.id && moveType == 'dragon') totalPower *= (item.dragonFang.power() /100) +1
+        if (team[exploreActiveMember].item == item.fairyFeather.id && moveType == 'fairy') totalPower *= (item.fairyFeather.power() /100) +1
+        if (team[exploreActiveMember].item == item.hardStone.id && moveType == 'rock') totalPower *= (item.hardStone.power() /100) +1
+        if (team[exploreActiveMember].item == item.magnet.id && moveType == 'electric') totalPower *= (item.magnet.power() /100) +1
+        if (team[exploreActiveMember].item == item.metalCoat.id && moveType == 'steel') totalPower *= (item.metalCoat.power() /100) +1
+        if (team[exploreActiveMember].item == item.miracleSeed.id && moveType == 'grass') totalPower *= (item.miracleSeed.power() /100) +1
+        if (team[exploreActiveMember].item == item.mysticWater.id && moveType == 'water') totalPower *= (item.mysticWater.power() /100) +1
+        if (team[exploreActiveMember].item == item.neverMeltIce.id && moveType == 'ice') totalPower *= (item.neverMeltIce.power() /100) +1
+        if (team[exploreActiveMember].item == item.poisonBarb.id && moveType == 'poison') totalPower *= (item.poisonBarb.power() /100) +1
+        if (team[exploreActiveMember].item == item.sharpBeak.id && moveType == 'flying') totalPower *= (item.sharpBeak.power() /100) +1
+        if (team[exploreActiveMember].item == item.silkScarf.id && moveType == 'normal') totalPower *= (item.silkScarf.power() /100) +1
+        if (team[exploreActiveMember].item == item.silverPowder.id && moveType == 'bug') totalPower *= (item.silverPowder.power() /100) +1
+        if (team[exploreActiveMember].item == item.softSand.id && moveType == 'ground') totalPower *= (item.softSand.power() /100) +1
+        if (team[exploreActiveMember].item == item.spellTag.id && moveType == 'ghost') totalPower *= (item.spellTag.power() /100) +1
+        if (team[exploreActiveMember].item == item.twistedSpoon.id && moveType == 'psychic') totalPower *= (item.twistedSpoon.power() /100) +1
                  
         if (team[exploreActiveMember].item == item.lightClay.id) totalPower *= (item.lightClay.power() /100) +1
         
@@ -2616,8 +2693,54 @@ function exploreCombatPlayer() {
         
         if (team[exploreActiveMember].item == item.lifeOrb.id) totalPower *= item.lifeOrb.power()
 
-        if (move[nextMovePlayer].power === 0) totalPower = 0
+        //mega items //really bad implementation!
+        if (team[exploreActiveMember].item == item.glalitite.id && team[exploreActiveMember].pkmn.id == pkmn.megaGlalie.id) totalPower *= item.glalitite.power()
+        if (team[exploreActiveMember].item == item.absolite.id && team[exploreActiveMember].pkmn.id == pkmn.megaAbsol.id) totalPower *= item.absolite.power()
+        if (team[exploreActiveMember].item == item.aerodactylite.id && team[exploreActiveMember].pkmn.id == pkmn.megaAerodactyl.id) totalPower *= item.aerodactylite.power()
+        if (team[exploreActiveMember].item == item.aggronite.id && team[exploreActiveMember].pkmn.id == pkmn.megaAggron.id) totalPower *= item.aggronite.power()
+        if (team[exploreActiveMember].item == item.alakazite.id && team[exploreActiveMember].pkmn.id == pkmn.megaAlakazam.id) totalPower *= item.alakazite.power()
+        if (team[exploreActiveMember].item == item.altarianite.id && team[exploreActiveMember].pkmn.id == pkmn.megaAltaria.id) totalPower *= item.altarianite.power()
+        if (team[exploreActiveMember].item == item.ampharosite.id && team[exploreActiveMember].pkmn.id == pkmn.megaAmpharos.id) totalPower *= item.ampharosite.power()
+        if (team[exploreActiveMember].item == item.audinite.id && team[exploreActiveMember].pkmn.id == pkmn.megaAudino.id) totalPower *= item.audinite.power()
+        if (team[exploreActiveMember].item == item.banettite.id && team[exploreActiveMember].pkmn.id == pkmn.megaBanette.id) totalPower *= item.banettite.power()
+        if (team[exploreActiveMember].item == item.beedrillite.id && team[exploreActiveMember].pkmn.id == pkmn.megaBeedrill.id) totalPower *= item.beedrillite.power()
+        if (team[exploreActiveMember].item == item.blastoisinite.id && team[exploreActiveMember].pkmn.id == pkmn.megaBlastoise.id) totalPower *= item.blastoisinite.power()
+        if (team[exploreActiveMember].item == item.blazikenite.id && team[exploreActiveMember].pkmn.id == pkmn.megaBlaziken.id) totalPower *= item.blazikenite.power()
+        if (team[exploreActiveMember].item == item.cameruptite.id && team[exploreActiveMember].pkmn.id == pkmn.megaCamerupt.id) totalPower *= item.cameruptite.power()
+        if (team[exploreActiveMember].item == item.charizarditeX.id && team[exploreActiveMember].pkmn.id == pkmn.megaCharizardX.id) totalPower *= item.charizarditeX.power()
+        if (team[exploreActiveMember].item == item.charizarditeY.id && team[exploreActiveMember].pkmn.id == pkmn.megaCharizardY.id) totalPower *= item.charizarditeY.power()
+        if (team[exploreActiveMember].item == item.diancite.id && team[exploreActiveMember].pkmn.id == pkmn.megaDiancie.id) totalPower *= item.diancite.power()
+        if (team[exploreActiveMember].item == item.galladite.id && team[exploreActiveMember].pkmn.id == pkmn.megaGallade.id) totalPower *= item.galladite.power()
+        if (team[exploreActiveMember].item == item.garchompite.id && team[exploreActiveMember].pkmn.id == pkmn.megaGarchomp.id) totalPower *= item.garchompite.power()
+        if (team[exploreActiveMember].item == item.gardevoirite.id && team[exploreActiveMember].pkmn.id == pkmn.megaGardevoir.id) totalPower *= item.gardevoirite.power()
+        if (team[exploreActiveMember].item == item.gengarite.id && team[exploreActiveMember].pkmn.id == pkmn.megaGengar.id) totalPower *= item.gengarite.power()
+        if (team[exploreActiveMember].item == item.gyaradosite.id && team[exploreActiveMember].pkmn.id == pkmn.megaGyarados.id) totalPower *= item.gyaradosite.power()
+        if (team[exploreActiveMember].item == item.heracronite.id && team[exploreActiveMember].pkmn.id == pkmn.megaHeracross.id) totalPower *= item.heracronite.power()
+        if (team[exploreActiveMember].item == item.houndoominite.id && team[exploreActiveMember].pkmn.id == pkmn.megaHoundoom.id) totalPower *= item.houndoominite.power()
+        if (team[exploreActiveMember].item == item.kangaskhanite.id && team[exploreActiveMember].pkmn.id == pkmn.megaKangaskhan.id) totalPower *= item.kangaskhanite.power()
+        if (team[exploreActiveMember].item == item.lopunnite.id && team[exploreActiveMember].pkmn.id == pkmn.megaLopunny.id) totalPower *= item.lopunnite.power()
+        if (team[exploreActiveMember].item == item.lucarionite.id && team[exploreActiveMember].pkmn.id == pkmn.megaLucario.id) totalPower *= item.lucarionite.power()
+        if (team[exploreActiveMember].item == item.manectite.id && team[exploreActiveMember].pkmn.id == pkmn.megaManectric.id) totalPower *= item.manectite.power()
+        if (team[exploreActiveMember].item == item.mawilite.id && team[exploreActiveMember].pkmn.id == pkmn.megaMawile.id) totalPower *= item.mawilite.power()
+        if (team[exploreActiveMember].item == item.medichamite.id && team[exploreActiveMember].pkmn.id == pkmn.megaMedicham.id) totalPower *= item.medichamite.power()
+        if (team[exploreActiveMember].item == item.metagrossite.id && team[exploreActiveMember].pkmn.id == pkmn.megaMetagross.id) totalPower *= item.metagrossite.power()
+        if (team[exploreActiveMember].item == item.mewtwoniteX.id && team[exploreActiveMember].pkmn.id == pkmn.megaMewtwoX.id) totalPower *= item.mewtwoniteX.power()
+        if (team[exploreActiveMember].item == item.mewtwoniteY.id && team[exploreActiveMember].pkmn.id == pkmn.megaMewtwoY.id) totalPower *= item.mewtwoniteY.power()
+        if (team[exploreActiveMember].item == item.pidgeotite.id && team[exploreActiveMember].pkmn.id == pkmn.megaPidgeot.id) totalPower *= item.pidgeotite.power()
+        if (team[exploreActiveMember].item == item.pinsirite.id && team[exploreActiveMember].pkmn.id == pkmn.megaPinsir.id) totalPower *= item.pinsirite.power()
+        if (team[exploreActiveMember].item == item.sablenite.id && team[exploreActiveMember].pkmn.id == pkmn.megaSableye.id) totalPower *= item.sablenite.power()
+        if (team[exploreActiveMember].item == item.abomasite.id && team[exploreActiveMember].pkmn.id == pkmn.megaAbomasnow.id) totalPower *= item.abomasite.power()
+        if (team[exploreActiveMember].item == item.salamencite.id && team[exploreActiveMember].pkmn.id == pkmn.megaSalamence.id) totalPower *= item.salamencite.power()
+        if (team[exploreActiveMember].item == item.sceptilite.id && team[exploreActiveMember].pkmn.id == pkmn.megaSceptile.id) totalPower *= item.sceptilite.power()
+        if (team[exploreActiveMember].item == item.scizorite.id && team[exploreActiveMember].pkmn.id == pkmn.megaScizor.id) totalPower *= item.scizorite.power()
+        if (team[exploreActiveMember].item == item.sharpedonite.id && team[exploreActiveMember].pkmn.id == pkmn.megaSharpedo.id) totalPower *= item.sharpedonite.power()
+        if (team[exploreActiveMember].item == item.slowbronite.id && team[exploreActiveMember].pkmn.id == pkmn.megaSlowbro.id) totalPower *= item.slowbronite.power()
+        if (team[exploreActiveMember].item == item.steelixite.id && team[exploreActiveMember].pkmn.id == pkmn.megaSteelix.id) totalPower *= item.steelixite.power()
+        if (team[exploreActiveMember].item == item.swampertite.id && team[exploreActiveMember].pkmn.id == pkmn.megaSwampert.id) totalPower *= item.swampertite.power()
+        if (team[exploreActiveMember].item == item.tyranitarite.id && team[exploreActiveMember].pkmn.id == pkmn.megaTyranitar.id) totalPower *= item.tyranitarite.power()
+        if (team[exploreActiveMember].item == item.venusaurite.id && team[exploreActiveMember].pkmn.id == pkmn.megaVenusaur.id) totalPower *= item.venusaurite.power()
 
+        if (move[nextMovePlayer].power === 0) totalPower = 0
 
         if (team[exploreActiveMember].buffs?.confused>0 && rng(0.5)) totalPower = 0
         if (team[exploreActiveMember].buffs?.paralysis>0 && rng(0.25)) totalPower = 0
@@ -2628,46 +2751,48 @@ function exploreCombatPlayer() {
 
         //abilities
         const below50hp = pkmn[team[exploreActiveMember].pkmn.id]?.playerHp < (pkmn[team[exploreActiveMember].pkmn.id]?.playerHpMax * 0.5);
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.overgrow.id && move[nextMovePlayer].type == 'grass' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.blaze.id && move[nextMovePlayer].type == 'fire' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.swarm.id && move[nextMovePlayer].type == 'bug' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.torrent.id && move[nextMovePlayer].type == 'water' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.bastion.id && move[nextMovePlayer].type == 'steel' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.average.id && move[nextMovePlayer].type == 'normal' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.resolve.id && move[nextMovePlayer].type == 'fighting' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.mistify.id && move[nextMovePlayer].type == 'psychic' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.hexerei.id && move[nextMovePlayer].type == 'ghost' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.glimmer.id && move[nextMovePlayer].type == 'fairy' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.skyward.id && move[nextMovePlayer].type == 'flying' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.draconic.id && move[nextMovePlayer].type == 'dragon' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.noxious.id && move[nextMovePlayer].type == 'poison' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.solid.id && move[nextMovePlayer].type == 'rock' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.rime.id && move[nextMovePlayer].type == 'ice' ) totalPower *= 1.3
-        if (below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.voltage.id && move[nextMovePlayer].type == 'electric' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.overgrow.id) && moveType == 'grass' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.blaze.id) && moveType == 'fire' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.swarm.id) && moveType == 'bug' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.torrent.id) && moveType == 'water' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.bastion.id) && moveType == 'steel' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.average.id) && moveType == 'normal' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.resolve.id) && moveType == 'fighting' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.mistify.id) && moveType == 'psychic' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.hexerei.id) && moveType == 'ghost' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.glimmer.id) && moveType == 'fairy' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.skyward.id) && moveType == 'flying' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.draconic.id) && moveType == 'dragon' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.noxious.id) && moveType == 'poison' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.solid.id) && moveType == 'rock' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.rime.id) && moveType == 'ice' ) totalPower *= 1.3
+        if (below50hp && testAbility(`active`, ability.voltage.id) && moveType == 'electric' ) totalPower *= 1.3
 
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.ironFist.id && /dynamicPunch|dizzyPunch|firePunch|thunderPunch|bulletPunch|icePunch|powerupPunch|hammerArm|shadowPunch/.test(nextMovePlayer) ) totalPower *= 1.3
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.strongJaw.id && /fireFang|thunderFang|poisonFang|iceFang|bugBite|bite|crunch/.test(nextMovePlayer) ) totalPower *= 1.3
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.toughClaws.id && /furyCutter|shadowClaw|metalClaw|dragonClaw|nightSlash/.test(nextMovePlayer) ) totalPower *= 1.3
+        if (testAbility(`active`, ability.ironFist.id) && /dynamicPunch|dizzyPunch|firePunch|thunderPunch|bulletPunch|icePunch|powerupPunch|hammerArm|shadowPunch/.test(nextMovePlayer) ) totalPower *= 1.3
+        if (testAbility(`active`, ability.strongJaw.id) && /fireFang|thunderFang|poisonFang|iceFang|bugBite|bite|crunch/.test(nextMovePlayer) ) totalPower *= 1.3
+        if (testAbility(`active`, ability.toughClaws.id) && /furyCutter|shadowClaw|metalClaw|dragonClaw|nightSlash/.test(nextMovePlayer) ) totalPower *= 1.3
 
-        if ( pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.rivalry.id && pkmn[saved.currentPkmn].type.some(t => pkmn[team[exploreActiveMember].pkmn.id].type.includes(t)) ) totalPower *= 1.3
+        if ( testAbility(`active`, ability.rivalry.id) && pkmn[saved.currentPkmn].type.some(t => pkmn[team[exploreActiveMember].pkmn.id].type.includes(t)) ) totalPower *= 1.3
         
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.sheerForce.id &&  move[nextMovePlayer].hitEffect) totalPower *= 1.2
+        if (testAbility(`active`, ability.sheerForce.id) &&  move[nextMovePlayer].hitEffect) totalPower *= 1.2
+        
+        if (testAbility(`active`, ability.hugePower.id) && move[nextMovePlayer].split == 'physical') totalPower *= 2
 
 
 
 
 
         //weather
-        if (saved.weatherTimer>0 && saved.weather=="sunny" && move[nextMovePlayer].type == 'fire') totalPower *= 1.5
-        if (saved.weatherTimer>0 && saved.weather=="sunny" && move[nextMovePlayer].type == 'water') totalPower /= 1.5
-        if (saved.weatherTimer>0 && saved.weather=="rainy" && move[nextMovePlayer].type == 'water') totalPower *= 1.5
-        if (saved.weatherTimer>0 && saved.weather=="rainy" && move[nextMovePlayer].type == 'fairy') totalPower /= 1.5
-        if (saved.weatherTimer>0 && saved.weather=="sandstorm" && (move[nextMovePlayer].type == 'rock' || move[nextMovePlayer].type == 'ground') ) totalPower *= 1.5
-        if (saved.weatherTimer>0 && saved.weather=="hail" &&  move[nextMovePlayer].type == 'ice' ) totalPower *= 1.5
-        if (saved.weatherTimer>0 && saved.weather=="foggy" && (move[nextMovePlayer].type == 'ghost' || move[nextMovePlayer].type == 'dark') ) totalPower *= 1.5
-        if (saved.weatherTimer>0 && saved.weather=="electricTerrain" && (move[nextMovePlayer].type == 'electric' || move[nextMovePlayer].type == 'steel') ) totalPower *= 1.5
-        if (saved.weatherTimer>0 && saved.weather=="mistyTerrain" && (move[nextMovePlayer].type == 'fairy' || move[nextMovePlayer].type == 'psychic') ) totalPower *= 1.5
-        if (saved.weatherTimer>0 && saved.weather=="grassyTerrain" && (move[nextMovePlayer].type == 'grass' || move[nextMovePlayer].type == 'bug') ) totalPower *= 1.5
+        if (saved.weatherTimer>0 && saved.weather=="sunny" && moveType == 'fire') totalPower *= 1.5
+        if (saved.weatherTimer>0 && saved.weather=="sunny" && moveType == 'water') totalPower /= 1.5
+        if (saved.weatherTimer>0 && saved.weather=="rainy" && moveType == 'water') totalPower *= 1.5
+        if (saved.weatherTimer>0 && saved.weather=="rainy" && moveType == 'fairy') totalPower /= 1.5
+        if (saved.weatherTimer>0 && saved.weather=="sandstorm" && (moveType == 'rock' || moveType == 'ground') ) totalPower *= 1.5
+        if (saved.weatherTimer>0 && saved.weather=="hail" &&  moveType == 'ice' ) totalPower *= 1.5
+        if (saved.weatherTimer>0 && saved.weather=="foggy" && (moveType == 'ghost' || moveType == 'dark') ) totalPower *= 1.5
+        if (saved.weatherTimer>0 && saved.weather=="electricTerrain" && (moveType == 'electric' || moveType == 'steel') ) totalPower *= 1.5
+        if (saved.weatherTimer>0 && saved.weather=="mistyTerrain" && (moveType == 'fairy' || moveType == 'psychic') ) totalPower *= 1.5
+        if (saved.weatherTimer>0 && saved.weather=="grassyTerrain" && (moveType == 'grass' || moveType == 'bug') ) totalPower *= 1.5
 
 
 
@@ -2678,19 +2803,20 @@ function exploreCombatPlayer() {
 
         let multihit = 1
         if (move[nextMovePlayer].multihit) multihit = random(move[nextMovePlayer].multihit[0], move[nextMovePlayer].multihit[1])
-        if (move[nextMovePlayer].multihit && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.skillLink.id) multihit = move[nextMovePlayer].multihit[1]
+        if (move[nextMovePlayer].multihit && testAbility(`active`, ability.skillLink.id)) multihit = move[nextMovePlayer].multihit[1]
 
         
         for (let i = 0; i < multihit; i++) {
 
         wildPkmnHp -= totalPower;
+        if (testAbility(`active`, ability.parentalBond.id)) wildPkmnHp -= totalPower/2;
 
         }
 
 
 
 
-        if ( pkmn[ team[exploreActiveMember].pkmn.id ]?.ability != ability.magicGuard.id ){
+        if ( testAbility(`active`,  ability.magicGuard.id ) == false ){
 
 
         let dotDamage = 50
@@ -2715,14 +2841,17 @@ function exploreCombatPlayer() {
         for (let i = 0; i < multihit; i++) {
 
         if (!(team[exploreActiveMember].buffs?.freeze>0 || team[exploreActiveMember].buffs?.sleep>0)){
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability != ability.sheerForce.id || (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.sheerForce.id && totalPower==0  )){
-        if (move[nextMovePlayer].hitEffect && typeEffectiveness(move[nextMovePlayer].type, pkmn[saved.currentPkmn].type)!= 0) {
+        if (testAbility(`active`,  ability.sheerForce.id ) == false || ( testAbility(`active`, ability.sheerForce.id ) && totalPower==0  )){
+        if (move[nextMovePlayer].hitEffect && typeEffectiveness(moveType, pkmn[saved.currentPkmn].type)!= 0) {
             move[nextMovePlayer].hitEffect("wild")
         }
         }
         }
 
         }
+
+        if (testAbility(`active`, ability.sereneGrace.id)) move[nextMovePlayer].hitEffect("wild")
+        if (testAbility(`active`, ability.parentalBond.id)) move[nextMovePlayer].hitEffect("wild")
 
 
         updateTeamBuffs()
@@ -3151,47 +3280,47 @@ function exploreCombatWild() {
 
 
         //abilities
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.grabGuard.id && move[nextMoveWild].type == 'fighting') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.waterGuard.id && move[nextMoveWild].type == 'water') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.flameGuard.id && move[nextMoveWild].type == 'fire') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.curseGuard.id && move[nextMoveWild].type == 'ghost') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.poisonGuard.id && move[nextMoveWild].type == 'poison') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.iceGuard.id && move[nextMoveWild].type == 'ice') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.psychicGuard.id && move[nextMoveWild].type == 'psychic') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.fairyGuard.id && move[nextMoveWild].type == 'fairy') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.leafGuard.id && move[nextMoveWild].type == 'grass') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.plainGuard.id && move[nextMoveWild].type == 'normal') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.sinisterGuard.id && move[nextMoveWild].type == 'dark') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.steelGuard.id && move[nextMoveWild].type == 'steel') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.dragonGuard.id && move[nextMoveWild].type == 'dragon') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.rockGuard.id && move[nextMoveWild].type == 'rock') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.groundGuard.id && move[nextMoveWild].type == 'ground') totalPower /= 2
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.flyingGuard.id && move[nextMoveWild].type == 'flying') totalPower /= 2
+        if (testAbility(`active`,  ability.grabGuard.id ) && move[nextMoveWild].type == 'fighting') totalPower /= 2
+        if (testAbility(`active`,  ability.waterGuard.id ) && move[nextMoveWild].type == 'water') totalPower /= 2
+        if (testAbility(`active`,  ability.flameGuard.id ) && move[nextMoveWild].type == 'fire') totalPower /= 2
+        if (testAbility(`active`,  ability.curseGuard.id ) && move[nextMoveWild].type == 'ghost') totalPower /= 2
+        if (testAbility(`active`,  ability.poisonGuard.id ) && move[nextMoveWild].type == 'poison') totalPower /= 2
+        if (testAbility(`active`,  ability.iceGuard.id ) && move[nextMoveWild].type == 'ice') totalPower /= 2
+        if (testAbility(`active`,  ability.psychicGuard.id ) && move[nextMoveWild].type == 'psychic') totalPower /= 2
+        if (testAbility(`active`,  ability.fairyGuard.id ) && move[nextMoveWild].type == 'fairy') totalPower /= 2
+        if (testAbility(`active`,  ability.leafGuard.id ) && move[nextMoveWild].type == 'grass') totalPower /= 2
+        if (testAbility(`active`,  ability.plainGuard.id ) && move[nextMoveWild].type == 'normal') totalPower /= 2
+        if (testAbility(`active`,  ability.sinisterGuard.id ) && move[nextMoveWild].type == 'dark') totalPower /= 2
+        if (testAbility(`active`,  ability.steelGuard.id ) && move[nextMoveWild].type == 'steel') totalPower /= 2
+        if (testAbility(`active`,  ability.dragonGuard.id ) && move[nextMoveWild].type == 'dragon') totalPower /= 2
+        if (testAbility(`active`,  ability.rockGuard.id ) && move[nextMoveWild].type == 'rock') totalPower /= 2
+        if (testAbility(`active`,  ability.groundGuard.id ) && move[nextMoveWild].type == 'ground') totalPower /= 2
+        if (testAbility(`active`,  ability.flyingGuard.id ) && move[nextMoveWild].type == 'flying') totalPower /= 2
 
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.voltAbsorb.id && move[nextMoveWild].type == 'electric') totalPower = 0
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.waterAbsorb.id && move[nextMoveWild].type == 'water') totalPower = 0
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.flareAbsorb.id && move[nextMoveWild].type == 'fire') totalPower = 0
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.curseAbsorb.id && move[nextMoveWild].type == 'ghost') totalPower = 0
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.poisonAbsorb.id && move[nextMoveWild].type == 'poison') totalPower = 0
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.frostAbsorb.id && move[nextMoveWild].type == 'ice') totalPower = 0
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.psychicAbsorb.id && move[nextMoveWild].type == 'psychic') totalPower = 0
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.lightAbsorb.id && move[nextMoveWild].type == 'fairy') totalPower = 0
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.growthAbsorb.id && move[nextMoveWild].type == 'grass') totalPower = 0
+        if (testAbility(`active`,  ability.voltAbsorb.id  )&& move[nextMoveWild].type == 'electric') totalPower = 0
+        if (testAbility(`active`,  ability.waterAbsorb.id ) && move[nextMoveWild].type == 'water') totalPower = 0
+        if (testAbility(`active`,  ability.flareAbsorb.id ) && move[nextMoveWild].type == 'fire') totalPower = 0
+        if (testAbility(`active`,  ability.curseAbsorb.id  )&& move[nextMoveWild].type == 'ghost') totalPower = 0
+        if (testAbility(`active`,  ability.poisonAbsorb.id  )&& move[nextMoveWild].type == 'poison') totalPower = 0
+        if (testAbility(`active`,  ability.frostAbsorb.id  )&& move[nextMoveWild].type == 'ice') totalPower = 0
+        if (testAbility(`active`,  ability.psychicAbsorb.id  )&& move[nextMoveWild].type == 'psychic') totalPower = 0
+        if (testAbility(`active`,  ability.lightAbsorb.id  )&& move[nextMoveWild].type == 'fairy') totalPower = 0
+        if (testAbility(`active`,  ability.growthAbsorb.id  )&& move[nextMoveWild].type == 'grass') totalPower = 0
 
-        if (team[exploreActiveMember].item == undefined && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.unburden.id) team[exploreActiveMember].buffs.speup1 = 10
+        if (team[exploreActiveMember].item == undefined && testAbility(`active`,  ability.unburden.id )) team[exploreActiveMember].buffs.speup1 = 10
 
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.static.id && rng(0.1)) wildBuffs.paralysis = 3
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.flameBody.id && rng(0.1)) wildBuffs.burn = 3
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.poisonPoint.id && rng(0.1)) wildBuffs.poisoned = 3
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.strangeCharm.id && rng(0.1)) wildBuffs.confused = 3
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.effectSpore.id && rng(0.05)) wildBuffs.sleep = 3
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.glacialBody.id && rng(0.05)) wildBuffs.freeze = 3
+        if (testAbility(`active`,  ability.static.id ) && rng(0.1)) wildBuffs.paralysis = 3
+        if (testAbility(`active`,  ability.flameBody.id ) && rng(0.1)) wildBuffs.burn = 3
+        if (testAbility(`active`,  ability.poisonPoint.id ) && rng(0.1)) wildBuffs.poisoned = 3
+        if (testAbility(`active`,  ability.strangeCharm.id  )&& rng(0.1)) wildBuffs.confused = 3
+        if (testAbility(`active`,  ability.effectSpore.id ) && rng(0.05)) wildBuffs.sleep = 3
+        if (testAbility(`active`,  ability.glacialBody.id ) && rng(0.05)) wildBuffs.freeze = 3
 
         const below50hp = pkmn[team[exploreActiveMember].pkmn.id]?.playerHp < (pkmn[team[exploreActiveMember].pkmn.id]?.playerHpMax * 0.5);
-        if (!below50hp && pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.multiscale.id) totalPower /= 2
+        if (!below50hp && testAbility(`active`,  ability.multiscale.id )) totalPower /= 2
 
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.levitate.id && move[nextMoveWild].type==="ground") totalPower = 0
-        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability.thickFat.id && (move[nextMoveWild].type==="fire" || move[nextMoveWild].type==="ice") ) totalPower /= 2
+        if (testAbility(`active`,  ability.levitate.id ) && move[nextMoveWild].type==="ground") totalPower = 0
+        if (testAbility(`active`,  ability.thickFat.id ) && (move[nextMoveWild].type==="fire" || move[nextMoveWild].type==="ice") ) totalPower /= 2
 
 
         //weather
@@ -3424,6 +3553,9 @@ function setEventAreas() {
 
         if ( areas[i].unlockRequirement == undefined || areas[i].unlockRequirement() ) {
 
+
+        if (areas[i].encounter && areas[i].difficulty===tier2difficulty && areas.vsEliteFourLance.defeated!=true) return
+
         divAreas.addEventListener("click", e => { 
 
             saved.currentArea = i
@@ -3443,11 +3575,14 @@ function setEventAreas() {
 
        let unlockRequirement = ""
        if (areas[i].unlockRequirement && !areas[i].unlockRequirement()) unlockRequirement =`<span class="ticket-unlock">${areas[i].unlockDescription}</span>`
+       if (areas[i].encounter && areas[i].difficulty===tier2difficulty && areas.vsEliteFourLance.defeated!=true) unlockRequirement =`<span class="ticket-unlock">🔒 Defeat Elite Four Lance in VS to unlock</span>`
+
 
        let eventTag ;
        if (areas[i].level < 50) eventTag = `<strong class="event-tag">Wild Zone ✦</strong>`
        if (areas[i].level > 50) eventTag = `<strong style="filter:hue-rotate(140deg)" class="event-tag">Collection ◈</strong>`
-       if (areas[i].encounter && areas[i].difficulty===25) eventTag = `<strong style="filter:hue-rotate(50deg)" class="event-tag">Tier I Raid ❖</strong>`
+       if (areas[i].encounter && areas[i].difficulty===tier1difficulty) eventTag = `<strong style="filter:hue-rotate(50deg)" class="event-tag">Tier I Raid ❖</strong>`
+       if (areas[i].encounter && areas[i].difficulty===tier2difficulty) eventTag = `<strong style="filter:hue-rotate(200deg)" class="event-tag">Tier II Raid ❖</strong>`
 
        let nameTag = ""
        if (areas[i].encounter) nameTag = `<svg class="event-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><path fill="currentcolor" d="M55.9 38.9c2-3.5 3.1-7.5 3.1-11.8C59 13.3 46.9 2 32 2S5 13.3 5 27.2c0 4.2 1.1 8.2 3.1 11.8A7.16 7.16 0 0 0 5 44.9c0 4.1 3.6 7.5 8 7.5c.4 0 .8 0 1.2-.1c-.5 1.2-1.1 2.6-1.2 3.4c-.6 3.1 2.7 5.7 6.1 5.7c0 0 1.6.1 2-.2c1.3-1.2 0-6.4 0-6.4c0-.9.8-1.6 1.7-1.6s1.7.7 1.7 1.6c0 0-1.2 5.4 0 6.6c1 .9 4.8.9 5.8 0c1.3-1.2 0-6.6 0-6.6c0-.9.8-1.6 1.7-1.6s1.7.7 1.7 1.6c0 0-1.3 5.4 0 6.6c1 .9 4.8.9 5.8 0c1.3-1.2 0-6.6 0-6.6c0-.9.8-1.6 1.7-1.6c1 0 1.7.7 1.7 1.6c0 0-1.3 5.3 0 6.4c.3.3 2 .2 2 .2c3.4 0 6.7-2.6 6.1-5.7c-.1-.7-.7-2.2-1.2-3.4c.4.1.8.1 1.2.1c4.4 0 8-3.4 8-7.5c0-2.4-1.2-4.6-3.1-6m-38.5 1.4c-3-2.1-10.9-10.8-4.4-11.1c4-.2 13.7 3.1 14.3 6.8c.5 2.6-6.8 6.4-9.9 4.3m19.1 7.9c-1.5 1.4-7.2 1.4-8.8 0c-1.4-1.4.9-2.4 1.8-3.8c1-1.7 1.4-3.2 2.6-3.2s1.7 1.5 2.6 3.2c.9 1.4 3.3 2.5 1.8 3.8m10.4-7.9c-3 2.1-10.3-1.8-9.9-4.3c.6-3.7 10.3-7 14.3-6.8c6.5.4-1.4 9.1-4.4 11.1"/></svg>`
@@ -3457,13 +3592,16 @@ function setEventAreas() {
 
         divAreas.classList.add("event-ticket")
 
+        let levelrange = `${Math.max(1,areas[i].level-10)}-${areas[i].level}`
+        if (areas[i].encounter) levelrange = areas[i].level
+
         divAreas.innerHTML = `
         ${unlockRequirement}
                 <span class="hitbox"></span>
                 <div style="width: 100%; ">
                     <span class="explore-ticket-left">
                         <span><strong>${eventName}</strong>${nameTag}</span>
-                        <span><strong>Level :</strong><span> ${Math.max(1,areas[i].level-10)}-${areas[i].level}</span>  ${eventTag}</span>
+                        <span><strong>Level :</strong><span> ${levelrange}</span>  ${eventTag}</span>
                     </span>
                 </div>
                 <div style="width: 8rem;" class="explore-ticket-right">
@@ -3713,14 +3851,16 @@ function updatePokedex(){
 
         if (evoItemToUse != undefined) {
 
-
+            if (pkmn[i].evolve == undefined) continue
+            if (pkmn[i].evolve()[1].item == undefined) continue
 
             let levelToEvolve = wildAreaLevel2
             if (evoItemToUse === "linkStone") levelToEvolve = wildAreaLevel4
+            if (evoItemToUse === "oddRock") levelToEvolve = wildAreaLevel4
+            if (pkmn[i].evolve()[1].pkmn.id.slice(0, 4) === "mega") levelToEvolve = 100
  
             if (pkmn[i].level<levelToEvolve) continue
-            if (pkmn[i].evolve == undefined) continue
-            if (pkmn[i].evolve()[1].item == undefined) continue
+
             if (item[pkmn[i].evolve()[1].item.id] == undefined) continue
             if (item[pkmn[i].evolve()[1].item.id].id !== evoItemToUse) continue
             if (pkmn[ pkmn[i].evolve()[1].pkmn.id ].caught!=0) continue
@@ -3790,6 +3930,26 @@ function updatePokedex(){
 
 
                 if (item.rareCandy.got<=0){
+                updateItemBag()
+                exitTmTeaching()
+                }
+                })
+                
+            }
+
+
+            if (itemToUse == item.abilityCapsule.id){
+                if (pkmn[i].hiddenAbility == undefined) continue
+                if (pkmn[i].hiddenAbilityUnlocked == true) continue
+
+                div.addEventListener("click", e => { 
+
+                pkmn[i].hiddenAbilityUnlocked = true
+                item.abilityCapsule.got--
+                updatePokedex()  
+
+
+                if (item.abilityCapsule.got<=0){
                 updateItemBag()
                 exitTmTeaching()
                 }
@@ -4537,37 +4697,32 @@ function updateTeamBuffs(){
 
 
         //abilities
-        if (/burn|freeze|confused|paralysis|poisoned|sleep/.test(i) && team[slot].pkmn.ability == ability.marvelScale.id) team[slot].buffs.defup1 = 1
-        if (/burn|freeze|confused|paralysis|poisoned|sleep/.test(i) && team[slot].pkmn.ability == ability.livingShield.id) team[slot].buffs.sdefup1 = 1
-        if (/burn|freeze|confused|paralysis|poisoned|sleep/.test(i) && team[slot].pkmn.ability == ability.guts.id) team[slot].buffs.atkup1 = 1
-        if (/burn|freeze|confused|paralysis|poisoned|sleep/.test(i) && team[slot].pkmn.ability == ability.brittleArmor.id) team[slot].buffs.satkup1 = 1
+        if (/burn|freeze|confused|paralysis|poisoned|sleep/.test(i) && testAbility(slot,  ability.marvelScale.id) ) team[slot].buffs.defup1 = 1
+        if (/burn|freeze|confused|paralysis|poisoned|sleep/.test(i) && testAbility(slot,  ability.livingShield.id) ) team[slot].buffs.sdefup1 = 1
+        if (/burn|freeze|confused|paralysis|poisoned|sleep/.test(i) && testAbility(slot,  ability.guts.id) ) team[slot].buffs.atkup1 = 1
+        if (/burn|freeze|confused|paralysis|poisoned|sleep/.test(i) && testAbility(slot,  ability.brittleArmor.id) ) team[slot].buffs.satkup1 = 1
 
-        if (team[slot].pkmn.ability == ability.insomnia.id && i == "sleep") team[slot].buffs.sleep = 0
-        if (team[slot].pkmn.ability == ability.immunity.id && i == "poisoned") team[slot].buffs.poisoned = 0
-        if (team[slot].pkmn.ability == ability.limber.id && i == "paralysis") team[slot].buffs.paralysis = 0
-        if (team[slot].pkmn.ability == ability.ownTempo.id && i == "confused") team[slot].buffs.confused = 0
-        if (team[slot].pkmn.ability == ability.magmaArmor.id && i == "freeze") team[slot].buffs.freeze = 0
-        if (team[slot].pkmn.ability == ability.waterVeil.id && i == "burn") team[slot].buffs.burn = 0
+        if (testAbility(slot, ability.insomnia.id) && i == "sleep") team[slot].buffs.sleep = 0
+        if (testAbility(slot, ability.immunity.id) && i == "poisoned") team[slot].buffs.poisoned = 0
+        if (testAbility(slot, ability.limber.id) && i == "paralysis") team[slot].buffs.paralysis = 0
+        if (testAbility(slot, ability.ownTempo.id) && i == "confused") team[slot].buffs.confused = 0
+        if (testAbility(slot, ability.magmaArmor.id) && i == "freeze") team[slot].buffs.freeze = 0
+        if (testAbility(slot, ability.waterVeil.id) && i == "burn") team[slot].buffs.burn = 0
 
-        if (team[slot].pkmn.ability == ability.hyperCutter.id && i == "atkdown1" || i == "atkdown2") {team[slot].buffs.atkdown1 = 0; team[slot].buffs.atkdown2 = 0; continue}
-        if (team[slot].pkmn.ability == ability.bigPecks.id && i == "defdown1" || i == "defdown2") {team[slot].buffs.defdown1 = 0; team[slot].buffs.defdown2 = 0; continue}
+        if (testAbility(slot, ability.hyperCutter.id ) && (i == "atkdown1" || i == "atkdown2")) {team[slot].buffs.atkdown1 = 0; team[slot].buffs.atkdown2 = 0; continue}
+        if (testAbility(slot, ability.bigPecks.id ) && (i == "defdown1" || i == "defdown2")) {team[slot].buffs.defdown1 = 0; team[slot].buffs.defdown2 = 0; continue}
 
-        if (team[slot].pkmn.ability == ability.synchronize.id && /burn|freeze|confused|paralysis|poisoned|sleep/.test(i) )  { wildBuffs[i] = 3; updateWildBuffs()}
+        if (testAbility(slot, ability.synchronize.id)  && /burn|freeze|confused|paralysis|poisoned|sleep/.test(i) )  { wildBuffs[i] = 3; updateWildBuffs()}
 
-        if (team[slot].pkmn.ability == ability.chlorophyll.id && saved.weather == "sunny" && saved.weatherTimer>0) {team[slot].buffs.speup1 = 2;}
-        if (team[slot].pkmn.ability == ability.slushRush.id && saved.weather == "hail" && saved.weatherTimer>0) {team[slot].buffs.speup1 = 2;}
-        if (team[slot].pkmn.ability == ability.swiftSwim.id && saved.weather == "rainy" && saved.weatherTimer>0) {team[slot].buffs.speup1 = 2;}
-        if (team[slot].pkmn.ability == ability.sandRush.id && saved.weather == "sandstorm" && saved.weatherTimer>0) {team[slot].buffs.speup1 = 2;}
+        if (testAbility(slot, ability.chlorophyll.id)  && saved.weather == "sunny" && saved.weatherTimer>0) {team[slot].buffs.speup1 = 2;}
+        if (testAbility(slot, ability.slushRush.id ) && saved.weather == "hail" && saved.weatherTimer>0) {team[slot].buffs.speup1 = 2;}
+        if (testAbility(slot, ability.swiftSwim.id ) && saved.weather == "rainy" && saved.weatherTimer>0) {team[slot].buffs.speup1 = 2;}
+        if (testAbility(slot, ability.sandRush.id)  && saved.weather == "sandstorm" && saved.weatherTimer>0) {team[slot].buffs.speup1 = 2;}
 
-        if (team[slot].pkmn.ability == ability.solarPower.id && saved.weather == "sunny" && saved.weatherTimer>0) {team[slot].buffs.satkup1 = 2;}
-        if (team[slot].pkmn.ability == ability.iceBody.id && saved.weather == "hail" && saved.weatherTimer>0) {team[slot].buffs.defup1 = 2;}
-        if (team[slot].pkmn.ability == ability.rainDish.id && saved.weather == "rainy" && saved.weatherTimer>0) {team[slot].buffs.satkup1 = 2;}
-        if (team[slot].pkmn.ability == ability.sandForce.id && saved.weather == "sandstorm" && saved.weatherTimer>0) {team[slot].buffs.atkup1 = 2;}
-
-
-
-
-
+        if (testAbility(slot, ability.solarPower.id ) && saved.weather == "sunny" && saved.weatherTimer>0) {team[slot].buffs.satkup1 = 2;}
+        if (testAbility(slot, ability.iceBody.id ) && saved.weather == "hail" && saved.weatherTimer>0) {team[slot].buffs.defup1 = 2;}
+        if (testAbility(slot, ability.rainDish.id ) && saved.weather == "rainy" && saved.weatherTimer>0) {team[slot].buffs.satkup1 = 2;}
+        if (testAbility(slot, ability.sandForce.id ) && saved.weather == "sandstorm" && saved.weatherTimer>0) {team[slot].buffs.atkup1 = 2;}
 
         const div = document.createElement("span");
         div.className = "buff-tag";
@@ -4721,22 +4876,35 @@ function moveBuff(target,buff,mod){
 
         if (buff == "paralysis" && pkmn[team[exploreActiveMember].pkmn.id].type.includes("electric")) return
 
-        if (pkmn[team[exploreActiveMember].pkmn.id]?.ability == ability.wonderSkin.id && /burn|freeze|confused|paralysis|poisoned|sleep/.test(buff) && rng(0.5)) return
+        if (testAbility(`active`, ability.wonderSkin.id ) && /burn|freeze|confused|paralysis|poisoned|sleep/.test(buff) && rng(0.5)) return
         
         if (team[exploreActiveMember].item == item.lightClay.id && /atkup1|atkup2|defup1|defup2|stakup1|stakup2|sdefup1|sdefup2|speup1|speup2/.test(buff) ) affectedTurns++
         if (team[exploreActiveMember].item == item.mentalHerb.id && /atkdown1|atkdown2|defdown1|defdown2|stakdown1|stakdown2|sdefdown1|sdefdown2|spedown1|spedown2burn|freeze|confused|paralysis|poisoned|sleep/.test(buff) ) affectedTurns--
 
         //if (pkmn[team[exploreActiveMember].pkmn.id].ability == ability.hydratation.id && saved.weather == "rainy" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep|defdown1|defdown2|atkdown1|atkdown2|sdefdown1|sdefdown2|satkdown1|satkdown2|spedown1|spedown2/.test(buff)) {return}
-        if (pkmn[team[exploreActiveMember].pkmn.id].ability == ability.hydratation.id && saved.weather == "rainy" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep/.test(buff)) {return}
-        if (pkmn[team[exploreActiveMember].pkmn.id].ability == ability.sandVeil.id && saved.weather == "sandstorm" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep/.test(buff)) {return}
-        if (pkmn[team[exploreActiveMember].pkmn.id].ability == ability.snowCloak.id && saved.weather == "hail" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep/.test(buff)) {return}
+        if (testAbility(`active`, ability.hydratation.id ) && saved.weather == "rainy" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep/.test(buff)) {return}
+        if (testAbility(`active`, ability.sandVeil.id ) && saved.weather == "sandstorm" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep/.test(buff)) {return}
+        if (testAbility(`active`, ability.snowCloak.id ) && saved.weather == "hail" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep/.test(buff)) {return}
 
-        if (pkmn[team[exploreActiveMember].pkmn.id].ability == ability.grassyPelt.id && saved.weather == "rainy" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep|defdown1|defdown2|atkdown1|atkdown2|sdefdown1|sdefdown2|satkdown1|satkdown2|spedown1|spedown2/.test(buff)) {return}
-        if (pkmn[team[exploreActiveMember].pkmn.id].ability == ability.sandyPelt.id && saved.weather == "sunny" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep|defdown1|defdown2|atkdown1|atkdown2|sdefdown1|sdefdown2|satkdown1|satkdown2|spedown1|spedown2/.test(buff)) {return}
-        if (pkmn[team[exploreActiveMember].pkmn.id].ability == ability.moistPelt.id && saved.weather == "sandstorm" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep|defdown1|defdown2|atkdown1|atkdown2|sdefdown1|sdefdown2|satkdown1|satkdown2|spedown1|spedown2/.test(buff)) {return}
-        if (pkmn[team[exploreActiveMember].pkmn.id].ability == ability.fieryPelt.id && saved.weather == "hail" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep|defdown1|defdown2|atkdown1|atkdown2|sdefdown1|sdefdown2|satkdown1|satkdown2|spedown1|spedown2/.test(buff)) {return}
-        if (pkmn[team[exploreActiveMember].pkmn.id].ability == ability.pixiePelt.id && saved.weather == "foggy" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep|defdown1|defdown2|atkdown1|atkdown2|sdefdown1|sdefdown2|satkdown1|satkdown2|spedown1|spedown2/.test(buff)) {return}
+        if (testAbility(`active`, ability.grassyPelt.id)  && saved.weather == "rainy" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep|defdown1|defdown2|atkdown1|atkdown2|sdefdown1|sdefdown2|satkdown1|satkdown2|spedown1|spedown2/.test(buff)) {return}
+        if (testAbility(`active`, ability.sandyPelt.id ) && saved.weather == "sunny" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep|defdown1|defdown2|atkdown1|atkdown2|sdefdown1|sdefdown2|satkdown1|satkdown2|spedown1|spedown2/.test(buff)) {return}
+        if (testAbility(`active`, ability.moistPelt.id ) && saved.weather == "sandstorm" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep|defdown1|defdown2|atkdown1|atkdown2|sdefdown1|sdefdown2|satkdown1|satkdown2|spedown1|spedown2/.test(buff)) {return}
+        if (testAbility(`active`, ability.fieryPelt.id ) && saved.weather == "hail" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep|defdown1|defdown2|atkdown1|atkdown2|sdefdown1|sdefdown2|satkdown1|satkdown2|spedown1|spedown2/.test(buff)) {return}
+        if (testAbility(`active`, ability.pixiePelt.id ) && saved.weather == "foggy" && saved.weatherTimer>0 && /burn|freeze|confused|paralysis|poisoned|sleep|defdown1|defdown2|atkdown1|atkdown2|sdefdown1|sdefdown2|satkdown1|satkdown2|spedown1|spedown2/.test(buff)) {return}
 
+        if (testAbility(`active`, ability.simple.id) && buff.endsWith("1")) {
+            const upgradedBuff = buff.slice(0, -1) + "2";
+            team[exploreActiveMember].buffs[upgradedBuff] = 1;
+            return
+        }
+
+        if (testAbility(`active`, ability.contrary.id) && typeof buff === "string" && (buff.includes("down") || buff.includes("up")) ) {
+        const inverse = buff.includes("down")
+        ? buff.replace("down", "up")
+        : buff.replace("up", "down");
+        team[exploreActiveMember].buffs[inverse] = affectedTurns;  
+        return
+        }
 
         team[exploreActiveMember].buffs[buff] = affectedTurns
         return
@@ -5365,6 +5533,11 @@ shop.linkStone = {
     price: 1,
     currency: `gold`
 }
+shop.oddRock = {
+    icon: item.oddRock.id,
+    price: 1,
+    currency: `gold`
+}
 shop.ovalStone = {
     icon: item.ovalStone.id,
     price: 1,
@@ -5447,6 +5620,11 @@ shop.lifeOrb = {
 }
 shop.destinyKnot = {
     icon: item.destinyKnot.id,
+    price: 5,
+    currency: `gold`
+}
+shop.abilityCapsule = {
+    icon: item.abilityCapsule.id,
     price: 5,
     currency: `gold`
 }
@@ -5554,7 +5732,24 @@ div.addEventListener("click", () => {
 
 
 
+function testAbility(target,ability){
 
+
+    if (target == "active"){
+        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.ability == ability) return true
+        if (pkmn[ team[exploreActiveMember].pkmn.id ]?.hiddenAbility?.id == ability && pkmn[ team[exploreActiveMember].pkmn.id ]?.hiddenAbilityUnlocked == true) return true
+    }
+
+    if (/slot1|slot2|slot3|slot4|slot5|slot6/.test(target)){
+        if (pkmn[ team[target].pkmn.id ]?.ability == ability) return true
+        if (pkmn[ team[target].pkmn.id ]?.hiddenAbility?.id == ability && pkmn[ team[target].pkmn.id ]?.hiddenAbilityUnlocked == true) return true
+    }
+
+
+    return false
+
+
+}
 
 
 window.addEventListener('load', function() {

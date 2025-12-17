@@ -36,6 +36,7 @@ function saveGame() {
     data[i].ability = pkmn[i].ability;
     data[i].shiny = pkmn[i].shiny;
     data[i].shinyDisabled = pkmn[i].shinyDisabled;
+    data[i].hiddenAbilityUnlocked = pkmn[i].hiddenAbilityUnlocked;
   }
 
   localStorage.setItem("gameData", JSON.stringify(data));
@@ -79,6 +80,7 @@ function loadGame() {
       pkmn[i].ability = data[i].ability;
       pkmn[i].shiny = data[i].shiny;
       pkmn[i].shinyDisabled = data[i].shinyDisabled;
+      pkmn[i].hiddenAbilityUnlocked = data[i].hiddenAbilityUnlocked;
     }
   }
 

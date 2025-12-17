@@ -258,6 +258,16 @@ body {
     
 }
 
+.explore-hp-wild{
+        position: absolute;
+    width: 100%;
+    height: 0.5rem;
+    background: rgb(130, 211, 130);
+    border-radius: 0.1rem;
+    transition: 0.5s all;
+    flex-shrink: 0;
+}
+
 .explore-header-moves{
 width: 100%;
 display: flex;
@@ -790,10 +800,13 @@ border: 1px solid rgba(255, 255, 255, 0.3);
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1rem;
-    padding: 0.3rem 0.5rem;
+    flex-direction: column;
+    gap: 0.3rem;
     border-radius: 0.2rem;
     background: var(--dark1);
+    font-size: 1.1rem;
+    color: var(--light2);
+    padding: 0.5rem;
 }
 
 .pkmn-stats-stat-abilities div{
@@ -807,6 +820,19 @@ border: 1px solid rgba(255, 255, 255, 0.3);
     white-space: nowrap;
     color: var(--light2);
     cursor: help;
+}
+
+.pkmn-stats-stat-abilities div span{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.pkmn-stats-stat-abilities div svg{
+    height: 1.3rem;
+    width: auto;
+    pointer-events: none;
 }
 
 .pkmn-stats-stat-switch{
@@ -2521,6 +2547,8 @@ color: var(--dark2);
     text-align: center;
     flex-shrink: 0;
     box-shadow: rgba(0, 0, 0, 0.4) 0 5px 5px;
+    position: sticky;
+    top: 0;
 
 }
 

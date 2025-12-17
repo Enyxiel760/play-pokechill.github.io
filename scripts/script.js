@@ -36,7 +36,7 @@ function updateGameVersion() {
   }
 
 
-  saved.version = 0.9
+  saved.version = 1.0
   document.getElementById(`game-version`).innerHTML = `v${saved.version}`
 
 }
@@ -304,6 +304,8 @@ function learnPkmnAbility(id) {
     const pool = Object.keys(ability).filter(a => {
         const ab = ability[a];
         if (ab.rarity !== tier) return false;
+        if (ab.type == undefined) return false;
+        if (a == pkmn[id].hiddenAbility?.id) return false
 
         // ab.type es un array → mirar si incluye "all" o si comparte tipo con el Pokémon
         return ab.type.includes("all") || ab.type.some(t => types.includes(t));
@@ -378,6 +380,11 @@ guide.inspecting = {
 guide.stats = {
   name: `Battle: Stats`,
   description: function() { return `Each species of Pokémon share the same base stats that determine the actual stats of a Pokémon at a given level<br><br>Stats determine how much damage they deal and receive ( see Battle: Moves). The speed stat determines how fast a Pokemon executes a move<br><br>Individual Values, or IV's, multiply base stats, and can be increased by getting multiple copies of Pokemon`}
+}
+
+guide.abilities = {
+  name: `Battle: Abilities`,
+  description: function() { return `Abilities are traits that a Pokemon can have. While they are randomised, some abilities can only appear on specific typings. Abilities are sorted in three categories; common, uncommon and rare<br><br>Hidden abilities are innate species-dependant traits that need to be unlocked with an Ability Capsule. Once unlocked, their effect will permanently be active alongside their other ability`}
 }
 
 guide.experience = {
