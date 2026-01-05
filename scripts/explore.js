@@ -247,6 +247,15 @@ function setWildPkmn(){
     spawnedPkmn = randomDivisionPkmn(areaDivision, typeWeak(pkmn[saved.trainingPokemon].type[0],pkmn[saved.trainingPokemon].type[1],1))
     if (pkmn[saved.trainingPokemon].type[1] != undefined && rng(0.5)) spawnedPkmn = randomDivisionPkmn(areaDivision, typeWeak(pkmn[saved.trainingPokemon].type[0],pkmn[saved.trainingPokemon].type[1],2))
 
+    if (!pkmn[spawnedPkmn]) {
+    areaDivision = numericDivision(areaDivision)
+    areaDivision--
+    areaDivision = numericDivision(areaDivision, "inverse")
+
+    spawnedPkmn = randomDivisionPkmn(areaDivision, typeWeak(pkmn[saved.trainingPokemon].type[0],pkmn[saved.trainingPokemon].type[1],1))
+    if (pkmn[saved.trainingPokemon].type[1] != undefined && rng(0.5)) spawnedPkmn = randomDivisionPkmn(areaDivision, typeWeak(pkmn[saved.trainingPokemon].type[0],pkmn[saved.trainingPokemon].type[1],2))
+    }
+
 
     wildLevel = pkmn[saved.trainingPokemon].level
     if (areas.training.tier==2) wildLevel = pkmn[saved.trainingPokemon].level+10
@@ -6258,7 +6267,7 @@ if (mod==="end"){
     summaryTags += `<div style="filter:hue-rotate(-50deg)">★ Ability swapped!</div>`
     } else {
     const newAbility = learnPkmnAbility(saved.geneticHost)
-    if (item!=="everstone") {pkmn[saved.geneticHost].ability = newAbility; summaryTags += `<div style="filter:hue-rotate(-50deg)">★ New abiltiy: ${format(newAbility)}!</div>`}
+    if (item!=="everstone") {pkmn[saved.geneticHost].ability = newAbility; summaryTags += `<div style="filter:hue-rotate(-50deg)">★ New ability: ${format(newAbility)}!</div>`}
     }
 
     pkmn[saved.geneticHost].movepool = []
@@ -6961,4 +6970,3 @@ window.addEventListener('load', function() {
 
     //updateTeamExp()
 });
-
