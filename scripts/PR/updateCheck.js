@@ -1,19 +1,38 @@
 let initialCommit = null;
+let updateShown = false;
+let updateInterval = null;
 
 async function getLatestCommit() {
-  const res = await fetch("https://api.github.com/repos/play-pokechill/play-pokechill.github.io/commits/main", {
-    cache: "no-store"
-  });
-  const data = await res.json();
-  return data.sha;
+  try{
+    const res = await fetch(
+      "https://api.github.com/repos/play-pokechill/play-pokechill.github.io/commits/main",
+      { cache: "no-cache" }
+    );
+
+    if (!res.ok) {
+      console.warn(`GitHub API error: ${res.status}`);
+      return null;
+    }
+    
+    const data = await res.json();
+    return data.sha || null;
+
+  } catch (err) {
+    console.warn(`Failed to fetch latest commit: ${err}`);
+    return null;
+  }
 }
 
 async function checkForUpdates() {
   const latest = await getLatestCommit();
+  if (!latest) return; // Fetch failed; try again later
 
   if (!initialCommit) {
+    // First run: store the current commit
     initialCommit = latest;
   } else if (initialCommit !== latest) {
+    // Update detected — stop polling and notify listeners
+    clearInterval(updateInterval);
     window.dispatchEvent(new Event("app-update-available"));
   }
 }
@@ -21,14 +40,36 @@ async function checkForUpdates() {
 // Initial setup
 (async () => {
   initialCommit = await getLatestCommit();
+  banner.style.position = "fixed";
+  banner.style.top = "0";
+  banner.style.left = "0";
+  banner.style.width = "100%";
+  banner.style.background = "#ff0";
+  banner.style.padding = "10px";
+  banner.style.textAlign = "center";
+  banner.style.cursor = "pointer";
+
+  // Poll every 5 minutes (12 requests/hour — safe/friendly for GitHub API limits)
+  updateInterval = setInterval(checkForUpdates, 300000);
 })();
-setInterval(checkForUpdates, 300000); // Check every 5 minutes   *API rate limited to 60 requests/hour so 12 is friendly*
 
 
 window.addEventListener("app-update-available", () => {
+  // Prevent duplicate banners
+  if (updateShown) return;
+  updateShown = true;
+
   const banner = document.createElement("div");
   banner.textContent = "A new update is available. Refresh to update.";
-  banner.style = "position:fixed;top:0;width:100%;background:#ff0;padding:10px;text-align:center;cursor:pointer;";
+  banner.style.position = "fixed";  
+  banner.style.top = "0";  
+  banner.style.left = "0";  
+  banner.style.width = "100%";  
+  banner.style.background = "#ff0";  
+  banner.style.padding = "10px";  
+  banner.style.textAlign = "center";  
+  banner.style.cursor = "pointer";  
+  banner.style.zIndex = "9999";
   banner.onclick = () => location.reload();
   document.body.appendChild(banner);
 });
