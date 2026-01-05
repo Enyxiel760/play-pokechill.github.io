@@ -5345,11 +5345,11 @@ for (const i in areas) {
   areas[i].team.slot2Moves = generateMoves(pkmn2.id);
   areas[i].team.slot3 = pkmn3;
   areas[i].team.slot3Moves = generateMoves(pkmn3.id);
-  areas[i].team.slot4 = pkmn3;
+  areas[i].team.slot4 = pkmn4;
   areas[i].team.slot4Moves = generateMoves(pkmn4.id);
-  areas[i].team.slot5 = pkmn3;
+  areas[i].team.slot5 = pkmn5;
   areas[i].team.slot5Moves = generateMoves(pkmn5.id);
-  areas[i].team.slot6 = pkmn3;
+  areas[i].team.slot6 = pkmn6;
   areas[i].team.slot6Moves = generateMoves(pkmn6.id);
 
 
