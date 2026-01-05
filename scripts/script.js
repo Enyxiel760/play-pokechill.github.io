@@ -321,7 +321,7 @@ observer.observe(document.body, {
 
 
 //--Gives Pokemon appropiate moves
-function learnPkmnMove(id, level, mod) {
+function learnPkmnMove(id, level, mod, exclude = []) {
     let attempts = 0;
     const MAX_ATTEMPTS = 100;
 
@@ -377,6 +377,9 @@ function learnPkmnMove(id, level, mod) {
         if (!chosenList || !chosenList.length) continue;
 
         const chosenMove = chosenList[Math.floor(Math.random() * chosenList.length)];
+        
+        if (exclude.includes(move[chosenMove].id)) continue; // prevents dupes for trainers
+
         return move[chosenMove].id;
     }
 

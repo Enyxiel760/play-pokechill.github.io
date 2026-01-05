@@ -5150,7 +5150,7 @@ function resetSpiralingTower(){
    
 }
 
-function createFrontierTrainers(){
+/*function createFrontierTrainers(){
 
     if (saved.lastFrontierRotation == rotationWildCurrent) return
     if (saved.lastFrontierRotation != rotationWildCurrent) { saved.lastFrontierRotation = rotationWildCurrent }
@@ -5257,6 +5257,112 @@ for (const i in areas) {
 
 
     
+}*/
+
+function createFrontierTrainersFixed(){
+
+    if (saved.lastFrontierRotation == rotationWildCurrent) return
+    if (saved.lastFrontierRotation != rotationWildCurrent) { saved.lastFrontierRotation = rotationWildCurrent }
+
+
+const trainers = [];
+
+for (const i in areas) {  
+  if (areas[i].type !== "frontier") continue;
+  areas[i].tier = undefined
+  areas[i].team = undefined
+  areas[i].defeated = undefined
+  areas[i].difficulty = undefined
+  areas[i].reward = undefined
+  areas[i].level = undefined
+}
+
+for (const i in areas) {  
+  if (areas[i].type !== "frontier") continue;
+  if (areas[i].league !== rotationFrontierCurrent) continue;
+  trainers.push(areas[i]);
+}
+
+for (let i = trainers.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [trainers[i], trainers[j]] = [trainers[j], trainers[i]];
+}
+
+trainers.slice(0, 4).forEach((area, index) => {
+  area.tier = index + 1;
+});
+
+
+for (const i in areas) {
+  if (areas[i].type !== "frontier") continue;
+  if (areas[i].tier == undefined) continue;
+  
+  areas[i].background = "tower"
+
+  if (areas[i].tier==1) areas[i].level = 100
+  if (areas[i].tier==2) areas[i].level = 120
+  if (areas[i].tier==3) areas[i].level = 130
+  if (areas[i].tier==4) areas[i].level = 150
+
+  if (areas[i].tier==1) areas[i].difficulty = 8
+  if (areas[i].tier==2) areas[i].difficulty = 10
+  if (areas[i].tier==3) areas[i].difficulty = 15
+  if (areas[i].tier==4) areas[i].difficulty = 20
+
+  if (areas[i].tier==1) areas[i].reward = [item.goldenBottleCap, arrayPick(exclusiveFrontierPkmn)]
+  if (areas[i].tier==2) areas[i].reward = [item.goldenBottleCap, arrayPick(exclusiveFrontierPkmn)]
+  if (areas[i].tier==3) areas[i].reward = [item.goldenBottleCap, arrayPick(exclusiveFrontierPkmn)]
+  if (areas[i].tier==4) areas[i].reward = [item.goldenBottleCap, arrayPick(exclusiveFrontierPkmn)]
+
+  let divisionToUse = "C"
+  if (rotationFrontierCurrent == 2) divisionToUse = "B"
+  if (rotationFrontierCurrent == 3) divisionToUse = "A"
+  if (rotationFrontierCurrent == 4) divisionToUse = "S"
+
+  let pkmn1 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing)]
+  let pkmn2 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing, [pkmn1?.id])]
+  let pkmn3 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing, [pkmn1?.id, pkmn2?.id])]
+  let pkmn4 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing, [pkmn1?.id, pkmn2?.id, pkmn3?.id])]
+  let pkmn5 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing, [pkmn1?.id, pkmn2?.id, pkmn3?.id, pkmn4?.id])]
+  let pkmn6 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing, [pkmn1?.id, pkmn2?.id, pkmn3?.id, pkmn4?.id, pkmn5?.id])]
+
+
+  if (rotationFrontierCurrent == 3) divisionToUse = "B"
+  if (rotationFrontierCurrent == 4) divisionToUse = "A"
+
+  if (pkmn1 == undefined) pkmn1 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing)]
+  if (pkmn2 == undefined) pkmn2 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing, [pkmn1])]
+  if (pkmn3 == undefined) pkmn3 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing, [pkmn1, pkmn2])]
+  if (pkmn4 == undefined) pkmn4 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing, [pkmn1, pkmn2, pkmn3])]
+  if (pkmn5 == undefined) pkmn5 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing, [pkmn1, pkmn2, pkmn3, pkmn4])]
+  if (pkmn6 == undefined) pkmn6 = pkmn[randomDivisionPkmn(divisionToUse, areas[i].typing, [pkmn1, pkmn2, pkmn3, pkmn4, pkmn5])]
+
+
+  areas[i].team = {}
+  areas[i].team.slot1 = pkmn1
+  areas[i].team.slot1Moves = generateMoves(pkmn1.id);
+  areas[i].team.slot2 = pkmn2;
+  areas[i].team.slot2Moves = generateMoves(pkmn2.id);
+  areas[i].team.slot3 = pkmn3;
+  areas[i].team.slot3Moves = generateMoves(pkmn3.id);
+  areas[i].team.slot4 = pkmn3;
+  areas[i].team.slot4Moves = generateMoves(pkmn4.id);
+  areas[i].team.slot5 = pkmn3;
+  areas[i].team.slot5Moves = generateMoves(pkmn5.id);
+  areas[i].team.slot6 = pkmn3;
+  areas[i].team.slot6Moves = generateMoves(pkmn6.id);
+
+
+
+}
+
+function generateMoves(id) {
+    const moves = [];
+    for (let j = 0; j < 4; j++) {
+        moves.push(learnPkmnMove(id, 100, "wild", moves));
+    }
+    return moves;
+}    
 }
 
 /*function randomDivisionPkmn(division, type, exclude) {
@@ -5324,7 +5430,7 @@ function updateFrontier() {
     }
 
 
-    createFrontierTrainers()
+    createFrontierTrainersFixed()
     resetSpiralingTower()
     document.getElementById(`frontier-listing`).innerHTML = ""
 
