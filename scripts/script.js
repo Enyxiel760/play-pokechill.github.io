@@ -444,6 +444,7 @@ function learnPkmnAbility(id) {
         if (ab.rarity !== tier) return false;
         if (ab.type == undefined) return false;
         if (a == pkmn[id].hiddenAbility?.id) return false
+        if (a == pkmn[id].ability) return false
 
         return ab.type.includes("all") || ab.type.some(t => types.includes(t));
     });

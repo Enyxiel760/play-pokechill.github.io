@@ -1317,10 +1317,19 @@ function openMenu(){
     if (saved.currentArea!==undefined){
         document.getElementById(`menu-item-vs`).style.filter = "brightness(0.6)"
         document.getElementById(`menu-item-team`).style.filter = "brightness(0.6)"
+        document.getElementById(`menu-item-training`).style.filter = "brightness(0.6)"
     } else {
         document.getElementById(`menu-item-vs`).style.filter = "brightness(1)"
         document.getElementById(`menu-item-team`).style.filter = "brightness(1)"
+        document.getElementById(`menu-item-training`).style.filter = "brightness(1)"
     }
+
+    if (saved.currentArea == areas.training.id) {
+        document.getElementById(`menu-item-travel`).style.filter = "brightness(0.6)"
+        document.getElementById(`menu-item-training`).style.filter = "brightness(1)"
+    } else document.getElementById(`menu-item-travel`).style.filter = "brightness(1)"
+
+
 
     if (document.getElementById(`menu-button`).classList.contains(`menu-button-open`)) {
     document.getElementById(`menu-button`).classList.remove(`menu-button-open`)
@@ -1707,7 +1716,7 @@ document.addEventListener("contextmenu", e => {
         if (el.dataset.help === `Dungeons`) document.getElementById("tooltipBottom").innerHTML = `Pokemon in Dungeons can't be caught, but they can drop useful items and EXP. Dungeons rotate every day aswell`
 
         if (el.dataset.help === `Training`) document.getElementById("tooltipTitle").innerHTML = `Training`
-        if (el.dataset.help === `Training`) document.getElementById("tooltipBottom").innerHTML = `Challenge your Pokemon against waves of foes in order to get stronger. You will naturally have typing advantadge against Pokemon fought against, and their level will scale to yours. Type Immunities inside training will be instead converted to resistances<br><br>Failing a training will result in no gains`
+        if (el.dataset.help === `Training`) document.getElementById("tooltipBottom").innerHTML = `Challenge your Pokemon against waves of foes in order to get stronger. You will naturally have typing advantage against Pokemon fought against, and their level will scale to yours. Type Immunities inside training will be instead converted to resistances<br><br>Failing a training will result in no gains`
 
         if (el.dataset.help === `Events`) document.getElementById("tooltipTitle").innerHTML = `Events`
         if (el.dataset.help === `Events`) document.getElementById("tooltipBottom").innerHTML = `Events might house both items and Pokemon to get. Events marked with a skull signify powerful foes that usually require an item to catch (The item wont be consumed if failed to defeat). All Events rotate every three days.`
@@ -4759,6 +4768,9 @@ function switchMenu(id){
 
     if (id==="travel") {
 
+        if (saved.currentArea == areas.training.id) {openMenu(); return; }
+
+
         if (saved.currentArea==undefined) {
         document.getElementById(`explore-menu`).style.display = "flex"
         document.getElementById(`explore-menu`).style.zIndex = "40"
@@ -4780,9 +4792,23 @@ function switchMenu(id){
     } 
 
     if (id==="training") {
+
+        if (saved.currentArea!==undefined && saved.currentArea!= areas.training.id) {openMenu(); return; }
+
+        if (saved.currentArea==undefined) {
         document.getElementById(`training-menu`).style.display = "flex"
         document.getElementById(`training-menu`).style.zIndex = "40"
         setTrainingMenu()
+        }
+
+        else {
+        setTimeout(() => {
+        document.getElementById(`content-explore`).style.display = "flex"
+        document.getElementById(`content-explore`).style.zIndex = "40"         
+        }, 1);
+        }
+
+
     } 
 
     if (id==="shop") {
@@ -6643,7 +6669,7 @@ training.hiddenAbility = {
 
 training.move = { //disapears if you have 20+ moves or smth
     name: `Move Training`,
-    info: `Learn a new Pokemon Move. Can only be done with less than 20 moves`,
+    info: `Learn a new Pokemon Move. Can only be done with less than 20 moves, or when a new move is available`,
     tier: 1,
     color: `#cf79c1`,
     condition: function() { if (learnPkmnMove(pkmn[saved.trainingPokemon].id, pkmn[saved.trainingPokemon].level)!=undefined && pkmn[saved.trainingPokemon].movepool.length<20) return true },
