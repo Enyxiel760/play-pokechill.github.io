@@ -3,7 +3,7 @@ let updateShown = false;
 let updateInterval = null;
 
 async function getLatestCommit() {
-  try{
+  try {
     const res = await fetch(
       "https://api.github.com/repos/play-pokechill/play-pokechill.github.io/commits/main",
       { cache: "no-cache" }
@@ -40,14 +40,7 @@ async function checkForUpdates() {
 // Initial setup
 (async () => {
   initialCommit = await getLatestCommit();
-  banner.style.position = "fixed";
-  banner.style.top = "0";
-  banner.style.left = "0";
-  banner.style.width = "100%";
-  banner.style.background = "#ff0";
-  banner.style.padding = "10px";
-  banner.style.textAlign = "center";
-  banner.style.cursor = "pointer";
+  
 
   // Poll every 5 minutes (12 requests/hour — safe/friendly for GitHub API limits)
   updateInterval = setInterval(checkForUpdates, 300000);
