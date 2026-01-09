@@ -110,7 +110,7 @@ function loadGame() {
 }
 
 
-function exportData() {
+/*function exportData() {
   const raw = localStorage.getItem("gameData");
   if (!raw) return;
 
@@ -123,7 +123,7 @@ function exportData() {
   a.click();
 
   URL.revokeObjectURL(url);
-}
+}*/
 
 function importData() {
   const input = document.createElement("input");
